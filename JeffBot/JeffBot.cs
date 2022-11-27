@@ -43,8 +43,6 @@ namespace JeffBot
         {
             GetUsersFollowsResponse followers;
             string pagniation = null;
-            //do
-            //{
             followers = await _twitchApi.Helix.Users.GetUsersFollowsAsync(first: 100, toId: StreamerSettings.StreamerId, after: pagniation);
             foreach (var follower in followers.Follows)
             {
@@ -73,6 +71,7 @@ namespace JeffBot
         #region InitializeChat
         private void InitializeChat()
         {
+            Console.WriteLine($"Initialize {StreamerSettings.StreamerName}'s chat as {StreamerSettings.StreamerBotName}");
             ConnectionCredentials credentials = new ConnectionCredentials(StreamerSettings.StreamerBotName, StreamerSettings.StreamerBotOauthToken);
             var clientOptions = new ClientOptions
             {
@@ -88,7 +87,11 @@ namespace JeffBot
             _twitchChatClient.OnConnected += ChatClient_OnConnected;
             _twitchChatClient.OnMessageReceived += ChatClient_OnMessageReceived;
             _twitchChatClient.OnDisconnected += ChatClient_OnDisconnected;
-            _twitchChatClient.Connect();
+            if (!_twitchChatClient.Connect())
+            {
+                Console.WriteLine($"Failed to connect to {StreamerSettings.StreamerName}'s chat as {StreamerSettings.StreamerBotName}");
+                WaitAndAttemptReconnection();
+            }
         }
 
         #endregion
@@ -111,14 +114,7 @@ namespace JeffBot
         #region ChatClient_OnDisconnected
         private void ChatClient_OnDisconnected(object? sender, OnDisconnectedEventArgs e)
         {
-            // If we disconnect, wait 30 seconds, cleanup and reconnect.
-            Task.Delay(30000).Wait();
-            _twitchChatClient.OnLog -= ChatClient_OnLog;
-            _twitchChatClient.OnJoinedChannel -= ChatClient_OnJoinedChannel;
-            _twitchChatClient.OnConnected -= ChatClient_OnConnected;
-            _twitchChatClient.OnMessageReceived -= ChatClient_OnMessageReceived;
-            _twitchChatClient.OnDisconnected -= ChatClient_OnDisconnected;
-            InitializeChat();
+            WaitAndAttemptReconnection();
         }
         #endregion
         #region ChatClient_OnConnected
@@ -323,6 +319,20 @@ namespace JeffBot
                     _twitchChatClient.SendMessage(e.ChatMessage.Channel,  "Stream was NOT successfully marked.. Someone tell Jeff..");
                 }
             }
+        }
+        #endregion
+        #region WaitAndAttemptReconnection
+        private void WaitAndAttemptReconnection()
+        {
+            // If we disconnect, wait 30 seconds, cleanup and reconnect.
+            Console.WriteLine($"Disconnected, trying to reconnect..");
+            Task.Delay(30000).Wait();
+            _twitchChatClient.OnLog -= ChatClient_OnLog;
+            _twitchChatClient.OnJoinedChannel -= ChatClient_OnJoinedChannel;
+            _twitchChatClient.OnConnected -= ChatClient_OnConnected;
+            _twitchChatClient.OnMessageReceived -= ChatClient_OnMessageReceived;
+            _twitchChatClient.OnDisconnected -= ChatClient_OnDisconnected;
+            InitializeChat();
         }
         #endregion
     }
