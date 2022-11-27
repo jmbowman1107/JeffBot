@@ -97,7 +97,7 @@ namespace JeffBot
         {
             _twitchApi = new TwitchAPI();
 
-            //throw new NotImplementedException("Enter your Twitch API Client ID and Access Token below.")
+            throw new NotImplementedException("Enter your Twitch API Client ID and Access Token below.");
             //_twitchApi.Settings.ClientId = "YOUR_TWITCH_API_CLIENT_ID";
             //_twitchApi.Settings.AccessToken = "YOUR_TWITCH_API_ACCESS_TOKEN";
         }
