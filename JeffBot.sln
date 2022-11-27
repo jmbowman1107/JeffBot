@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JeffBot", "JeffBot\JeffBot.csproj", "{73FAB0D1-BA24-49AD-B43C-2277320B50EF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JeffBotWeb", "JeffBotWeb\JeffBotWeb.csproj", "{D1C9D99C-2465-4AD4-B658-CC6D81823501}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{73FAB0D1-BA24-49AD-B43C-2277320B50EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73FAB0D1-BA24-49AD-B43C-2277320B50EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73FAB0D1-BA24-49AD-B43C-2277320B50EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73FAB0D1-BA24-49AD-B43C-2277320B50EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1C9D99C-2465-4AD4-B658-CC6D81823501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1C9D99C-2465-4AD4-B658-CC6D81823501}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1C9D99C-2465-4AD4-B658-CC6D81823501}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1C9D99C-2465-4AD4-B658-CC6D81823501}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4B5D9A6F-C06A-49A1-AD46-4779DF6414CA}
+	EndGlobalSection
+EndGlobal
