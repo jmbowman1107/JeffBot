@@ -22,6 +22,7 @@ namespace JeffBot
     {
         public StreamerSettings StreamerSettings { get; set; }
         private TwitchClient _twitchChatClient;
+        private WebSocketClient _websocketClient;
         private TwitchPubSub _twitchPubSubClient;
         private TwitchAPI _twitchApi;
         private AdvancedClipper _advancedClipper;
@@ -78,8 +79,8 @@ namespace JeffBot
                 MessagesAllowedInPeriod = 750,
                 ThrottlingPeriod = TimeSpan.FromSeconds(30)
             };
-            WebSocketClient customClient = new WebSocketClient(clientOptions);
-            _twitchChatClient = new TwitchClient(customClient);
+            _websocketClient = new WebSocketClient(clientOptions);
+            _twitchChatClient = new TwitchClient(_websocketClient);
             _twitchChatClient.Initialize(credentials, StreamerSettings.StreamerName.ToLower());
 
             _twitchChatClient.OnLog += ChatClient_OnLog;
@@ -87,6 +88,7 @@ namespace JeffBot
             _twitchChatClient.OnConnected += ChatClient_OnConnected;
             _twitchChatClient.OnMessageReceived += ChatClient_OnMessageReceived;
             _twitchChatClient.OnDisconnected += ChatClient_OnDisconnected;
+            _websocketClient.OnStateChanged += WebSocketClient_OnStateChanged;
             if (!_twitchChatClient.Connect())
             {
                 Console.WriteLine($"Failed to connect to {StreamerSettings.StreamerName}'s chat as {StreamerSettings.StreamerBotName}");
@@ -100,7 +102,7 @@ namespace JeffBot
         {
             _twitchApi = new TwitchAPI();
 
-            throw new NotImplementedException("Enter your Twitch API Client ID and Access Token below.");
+             throw new NotImplementedException("Enter your Twitch API Client ID and Access Token below.");
             //_twitchApi.Settings.ClientId = "YOUR_TWITCH_API_CLIENT_ID";
             //_twitchApi.Settings.AccessToken = "YOUR_TWITCH_API_ACCESS_TOKEN";
         }
@@ -126,8 +128,7 @@ namespace JeffBot
         #region ChatClient_OnJoinedChannel
         private void ChatClient_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
-            Console.WriteLine("Hey guys! I am a bot connected via TwitchLib!");
-            //_twitchChatClient.SendMessage(e.Channel, "Hey guys! I am and sitting and ready to ban all the hoss.");
+            Console.WriteLine($"Hey guys! I am a bot connected via TwitchLib to {StreamerSettings.StreamerName}'s chat as the user {StreamerSettings.StreamerBotName}");
             if (StreamerSettings.BotFeatures.Contains(BotFeatures.Heist)) 
             {
                 Heist = new Heist(StreamerSettings, _twitchChatClient);
@@ -142,7 +143,10 @@ namespace JeffBot
                 if (e.ChatMessage.Username.Contains("hoss00312") || e.ChatMessage.Username.Contains("idwt_"))
                     _twitchChatClient.BanUser(e.ChatMessage.Channel, e.ChatMessage.Username, "We don't tolerate hate in this channel. Goodbye.");
 
-                if (e.ChatMessage.Message.ToLower().Contains("buy followers"))
+                if (e.ChatMessage.IsFirstMessage && (e.ChatMessage.Message.ToLower().Contains("buy followers") || 
+                                                     e.ChatMessage.Message.ToLower().Contains(" followers") || 
+                                                     e.ChatMessage.Message.ToLower().Contains(" viewers") || 
+                                                     e.ChatMessage.Message.ToLower().Contains(" views")))
                 {
                     var test = _twitchApi.Helix.Users.GetUsersFollowsAsync(fromId: e.ChatMessage.UserId, toId: StreamerSettings.StreamerId).Result;
                     if (test.Follows != null && !test.Follows.Any())
@@ -250,6 +254,39 @@ namespace JeffBot
                     _advancedClipper.ValidateAndPostToNoobHuner(e);
                 }
                 #endregion
+            }
+        }
+        #endregion
+
+        #region WebSocketClient_OnStateChanged
+        private void WebSocketClient_OnStateChanged(object sender, OnStateChangedEventArgs e)
+        {
+            Console.WriteLine($"Chat client websocket had a change in state in {StreamerSettings.StreamerName}'s chat with bot {StreamerSettings.StreamerBotName}: IsConnected = {e.IsConnected}");
+            if (e.IsConnected) return;
+            try
+            {
+                _twitchChatClient.OnLog -= ChatClient_OnLog;
+                _twitchChatClient.OnJoinedChannel -= ChatClient_OnJoinedChannel;
+                _twitchChatClient.OnConnected -= ChatClient_OnConnected;
+                _twitchChatClient.OnMessageReceived -= ChatClient_OnMessageReceived;
+                _twitchChatClient.OnDisconnected -= ChatClient_OnDisconnected;
+                _websocketClient.OnStateChanged -= WebSocketClient_OnStateChanged;
+                _twitchChatClient.Disconnect();
+            }
+            catch
+            {
+                // Swallow this as we are gonna just create a new Client anyways
+            }
+
+            try
+            {
+                _twitchChatClient = null;
+                InitializeChat();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error when trying to reconnect to twitch chat for {StreamerSettings.StreamerName} as {StreamerSettings.StreamerBotName}.");
+                Console.WriteLine(ex);
             }
         }
         #endregion
