@@ -15,6 +15,13 @@ namespace JeffBot
 {
     public class AdvancedClipCommand : BotCommandBase
     {
+        #region BotFeature - Override
+        public override BotFeatures BotFeature => BotFeatures.Clip;
+        #endregion
+        #region DefaultKeyword - Override
+        public override string DefaultKeyword => "clip";
+        #endregion
+
         #region NoobHunterFormUrl
         public string NoobHunterFormUrl { get; set; } = "http://bit.ly/NHClips";
         #endregion
@@ -183,21 +190,21 @@ namespace JeffBot
         #region ProcessMessage - IBotCommand Member
         public override void ProcessMessage(ChatMessage chatMessage)
         {
-            if (StreamerSettings.BotFeatures.Contains(BotFeatures.Clip))
+            if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatures.Clip))
             {
                 #region Clip
-                var isClipMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!clip$");
+                var isClipMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword}$");
                 if (isClipMessage.Captures.Count > 0)
                 {
-                    CreateTwitchClip(chatMessage, StreamerSettings.BotFeatures.Contains(BotFeatures.AdvancedClip));
+                    CreateTwitchClip(chatMessage, StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatures.AdvancedClip));
                 }
                 #endregion
             }
 
-            if (StreamerSettings.BotFeatures.Contains(BotFeatures.AdvancedClip))
+            if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatures.AdvancedClip))
             {
                 #region Clip Noobhunter
-                var isPostNoobHunter = Regex.Match(chatMessage.Message.ToLower(), @"^!clip noobhunter$");
+                var isPostNoobHunter = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} noobhunter$");
                 if (isPostNoobHunter.Captures.Count > 0)
                 {
                     ValidateAndPostToNoobHuner(chatMessage);

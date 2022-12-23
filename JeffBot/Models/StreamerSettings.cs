@@ -23,16 +23,7 @@ namespace JeffBot
         public string StreamElementsJwtToken { get; set; }
         #endregion
         #region BotFeatures
-        public List<BotFeatures> BotFeatures { get; set; } 
+        public List<BotFeature> BotFeatures { get; set; } 
         #endregion
-    }
-
-    public enum BotFeatures
-    {
-        BanHate,
-        Heist,
-        Clip,
-        AdvancedClip,
-        Mark,
     }
 }

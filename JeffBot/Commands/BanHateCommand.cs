@@ -11,6 +11,13 @@ namespace JeffBot
 {
     public class BanHateCommand : BotCommandBase
     {
+        #region BotFeature - Override
+        public override BotFeatures BotFeature => BotFeatures.BanHate;
+        #endregion
+        #region DefaultKeyword - Override
+        public override string DefaultKeyword => "banhate";
+        #endregion
+
         #region Constructor
         public BanHateCommand(TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
         { }
@@ -37,7 +44,7 @@ namespace JeffBot
         #region ProcessMessage - IBotCommand Member
         public override void ProcessMessage(ChatMessage chatMessage)
         {
-            if (StreamerSettings.BotFeatures.Contains(BotFeatures.BanHate))
+            if (IsCommandEnabled)
             {
                 if (chatMessage.Username.Contains("hoss00312") || chatMessage.Username.Contains("idwt_"))
                     TwitchChatClient.BanUser(chatMessage.Channel, chatMessage.Username, "We don't tolerate hate in this channel. Goodbye.");
@@ -66,7 +73,7 @@ namespace JeffBot
         #region TwitchPubSubClient_OnFollow
         private void TwitchPubSubClient_OnFollow(object sender, TwitchLib.PubSub.Events.OnFollowArgs e)
         {
-            if (StreamerSettings.BotFeatures.Contains(BotFeatures.BanHate))
+            if (IsCommandEnabled)
             {
                 if (e.Username.ToLower().Contains("hoss00312") || e.Username.ToLower().Contains("h0ss00312") || e.Username.Contains("idwt_"))
                     TwitchChatClient.BanUser(StreamerSettings.StreamerName.ToLower(), e.Username, "We don't tolerate hate in this channel. Goodbye.");
