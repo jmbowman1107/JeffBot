@@ -95,6 +95,7 @@ namespace JeffBot
         public void ValidateAndPostToNoobHuner(ChatMessage chatMessage)
         {
             string url = string.Empty;
+            KeyValuePair<string, (string url, DateTime dateTime)> recentClip = default;
 
             if (MostRecentClips.TryGetValue(chatMessage.Username, out (string url, DateTime dateTime) clip))
             {
@@ -104,7 +105,8 @@ namespace JeffBot
             {
                 if (MostRecentClips.Count > 0)
                 {
-                    url = MostRecentClips.FirstOrDefault(a => a.Value.dateTime == MostRecentClips.Max(b => b.Value.dateTime)).Value.url;
+                    recentClip = MostRecentClips.FirstOrDefault(a => a.Value.dateTime == MostRecentClips.Max(b => b.Value.dateTime));
+                    url = recentClip.Value.url;
                 }
             }
             else
@@ -117,7 +119,14 @@ namespace JeffBot
                 if (result.success)
                 {
                     MostRecentClips.Remove(chatMessage.Username);
-                    TwitchChatClient.SendMessage(chatMessage.Channel, $"{chatMessage.DisplayName}, your clip has been successfully submitted to NoobHunter!");
+                    if (string.IsNullOrEmpty(recentClip.Key))
+                    {
+                        TwitchChatClient.SendMessage(chatMessage.Channel, $"{chatMessage.DisplayName}, {recentClip.Key}'s clip has been successfully submitted to NoobHunter!");
+                    }
+                    else
+                    {
+                        TwitchChatClient.SendMessage(chatMessage.Channel, $"{chatMessage.DisplayName}, your clip has been successfully submitted to NoobHunter!");
+                    }
                 }
                 else
                 {
