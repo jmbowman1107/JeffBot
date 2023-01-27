@@ -3,6 +3,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
+using System.IO.Pipes;
 using System.Linq;
 using System.Text.RegularExpressions;
 using TwitchLib.Api;
@@ -95,7 +96,7 @@ namespace JeffBot
         public void ValidateAndPostToNoobHuner(ChatMessage chatMessage)
         {
             string url = string.Empty;
-            KeyValuePair<string, (string url, DateTime dateTime)> recentClip = default;
+            KeyValuePair<string, (string url, DateTime dateTime)> recentClip = new KeyValuePair<string, (string url, DateTime dateTime)>("default user", (string.Empty, DateTime.Now));
 
             if (MostRecentClips.TryGetValue(chatMessage.Username, out (string url, DateTime dateTime) clip))
             {
@@ -119,7 +120,7 @@ namespace JeffBot
                 if (result.success)
                 {
                     MostRecentClips.Remove(chatMessage.Username);
-                    if (string.IsNullOrEmpty(recentClip.Key))
+                    if (recentClip.Key != "default user")
                     {
                         TwitchChatClient.SendMessage(chatMessage.Channel, $"{chatMessage.DisplayName}, {recentClip.Key}'s clip has been successfully submitted to NoobHunter!");
                     }
