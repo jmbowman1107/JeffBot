@@ -13,8 +13,14 @@ namespace JeffBot
         #region StreamerBotName
         public string StreamerBotName { get; set; }
         #endregion
-        #region StreamerBotOauthToken
-        public string StreamerBotOauthToken { get; set; }
+        #region StreamerBotId
+        public string StreamerBotId { get; set; }
+        #endregion
+        #region StreamerBotChatOauthToken
+        public string StreamerBotChatOauthToken { get; set; }
+        #endregion
+        #region StreamerBotApiOauthToken
+        public string StreamerBotApiOauthToken { get; set; }
         #endregion
         #region StreamElementsChannelId
         public string StreamElementsChannelId { get; set; }

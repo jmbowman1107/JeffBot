@@ -291,7 +291,7 @@ namespace JeffBot
 
                 if (HeistParticipants.Count == 8)
                 {
-                    TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), ".announce Eight people have joined the heist! Winners of this heist will receive double points!");
+                    TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), "Eight people have joined the heist! Winners of this heist will receive double points!");
                 }
 
                 HeistParticipants.Add(participant);
