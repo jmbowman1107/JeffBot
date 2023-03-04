@@ -36,6 +36,7 @@ namespace JeffBot.Commands
             var test = new CompletionRequest($"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch. All of your responses will be in 500 characters or less. /n/nI am {StreamerSettings.StreamerBotName} here to serve {StreamerSettings.StreamerName}", model: Model.DavinciText, 200, 0.5, presencePenalty: 0.1, frequencyPenalty: 0.1);
             test.Prompt = String.Join(" /n/n", test.Prompt, whatToAsk);
             var result = await OpenAIAPI.Completions.CreateCompletionAsync(test);
+            Console.WriteLine(result.Completions[0].Text);
             TwitchChatClient.SendMessage(chatMessage.Channel, $"{result.Completions[0].Text}");
         } 
         #endregion
@@ -63,7 +64,7 @@ namespace JeffBot.Commands
         #region Initialize - Override
         public override void Initialize()
         {
-            OpenAIAPI = new OpenAIAPI("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");
+            OpenAIAPI = new OpenAIAPI("ADD KEY IN SOME WAY HERE");
         } 
         #endregion
     }
