@@ -31,5 +31,6 @@
         Clip,
         AdvancedClip,
         Mark,
+        AskMeAnything
     }
 }
