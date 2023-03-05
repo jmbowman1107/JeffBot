@@ -37,7 +37,7 @@ namespace JeffBot
             {
                 new("system", $"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch. Do NOT exceed 500 characters in any response. {StreamerSettings.AdditionalAIPrompt}."),
                 new("system", $"This message is from the user {chatMessage.DisplayName}."),
-                new("system", $"You will make up stories, if you don't know the answer."),
+                new("system", $"You will make up an answer, if you don't know the answer."),
                 new("user", $"{whatToAsk}")
             };
             var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 200, presencePenalty: 0.1, frequencyPenalty: 0.1 ));
@@ -73,7 +73,7 @@ namespace JeffBot
         #region Initialize - Override
         public override void Initialize()
         {
-            OpenAIClient = new OpenAIClient(new OpenAIAuthentication("ADD KEY"));
+            OpenAIClient = new OpenAIClient(new OpenAIAuthentication("ADD THIS"));
         }
         #endregion
 
