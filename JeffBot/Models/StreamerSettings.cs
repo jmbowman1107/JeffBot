@@ -28,6 +28,9 @@ namespace JeffBot
         #region StreamElementsJwtToken
         public string StreamElementsJwtToken { get; set; }
         #endregion
+        #region AdditionalAIPrompt 
+        public string AdditionalAIPrompt { get; set; }
+        #endregion
         #region BotFeatures
         public List<BotFeature> BotFeatures { get; set; } 
         #endregion

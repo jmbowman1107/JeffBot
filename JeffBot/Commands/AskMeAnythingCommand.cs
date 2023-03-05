@@ -1,20 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using OpenAI_API;
-using OpenAI_API.Completions;
-using OpenAI_API.Models;
+using OpenAI;
+using OpenAI.Chat;
+using OpenAI.Models;
 using TwitchLib.Api;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
 
-namespace JeffBot.Commands
+namespace JeffBot
 {
     public class AskMeAnythingCommand : BotCommandBase
     {
         #region OpenAIAPI
-        public OpenAIAPI OpenAIAPI { get; set; }
+        public OpenAIClient OpenAIClient { get; set; }
         #endregion
         #region BotFeature - Override
         public override BotFeatures BotFeature => BotFeatures.AskMeAnything;
@@ -32,12 +33,20 @@ namespace JeffBot.Commands
         #region AskAnything
         public async Task AskAnything(ChatMessage chatMessage, string whatToAsk)
         {
-
-            var test = new CompletionRequest($"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch. All of your responses will be in 500 characters or less. /n/nI am {StreamerSettings.StreamerBotName} here to serve {StreamerSettings.StreamerName}", model: Model.DavinciText, 200, 0.5, presencePenalty: 0.1, frequencyPenalty: 0.1);
-            test.Prompt = String.Join(" /n/n", test.Prompt, whatToAsk);
-            var result = await OpenAIAPI.Completions.CreateCompletionAsync(test);
-            Console.WriteLine(result.Completions[0].Text);
-            TwitchChatClient.SendMessage(chatMessage.Channel, $"{result.Completions[0].Text}");
+            var chatPrompts = new List<ChatPrompt>
+            {
+                new("system", $"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch. Do NOT exceed 500 characters in any response. {StreamerSettings.AdditionalAIPrompt}."),
+                new("system", $"This message is from the user {chatMessage.DisplayName}."),
+                new("system", $"You will make up stories, if you don't know the answer."),
+                new("user", $"{whatToAsk}")
+            };
+            var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 200, presencePenalty: 0.1, frequencyPenalty: 0.1 ));
+            Console.WriteLine(result.FirstChoice.Message.Content);
+            // Twitch messages cannot be longer than 500 characters.. so output multiple messages if the response from the AI is too long
+            foreach (Match match in SplitToLines(result.FirstChoice.Message.Content, 500))
+            {
+                TwitchChatClient.SendMessage(chatMessage.Channel, $"{match.Value}");
+            }
         } 
         #endregion
 
@@ -64,7 +73,14 @@ namespace JeffBot.Commands
         #region Initialize - Override
         public override void Initialize()
         {
-            OpenAIAPI = new OpenAIAPI("ADD KEY IN SOME WAY HERE");
+            OpenAIClient = new OpenAIClient(new OpenAIAuthentication("ADD KEY"));
+        }
+        #endregion
+
+        #region SplitToLines
+        public MatchCollection SplitToLines(string stringToSplit, int maximumLineLength)
+        {
+            return Regex.Matches(stringToSplit, @"(.{1," + maximumLineLength + @"})(?:\s|$)");
         } 
         #endregion
     }
