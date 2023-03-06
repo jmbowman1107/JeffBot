@@ -67,7 +67,7 @@ namespace JeffBot
         #region Initialize - Override
         public override void Initialize()
         {
-            OpenAIClient = new OpenAIClient(new OpenAIAuthentication("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"));
+            OpenAIClient = new OpenAIClient(new OpenAIAuthentication("ADD KEY HERE"));
         }
         #endregion
 
