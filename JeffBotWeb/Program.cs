@@ -7,11 +7,11 @@ namespace JeffBotWeb
 {
     public class Program
     {
-        public static List<JeffBot.StreamerSettings> StreamerSettings => new List<StreamerSettings> 
+        public static List<JeffBot.StreamerSettings> StreamerSettings => new List<StreamerSettings>
         {
             // Add your streamer settings here
         };
-        
+
         public static void Main(string[] args) 
         {
             foreach (var streamer in StreamerSettings)

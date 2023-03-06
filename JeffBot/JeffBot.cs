@@ -99,6 +99,7 @@ namespace JeffBot
             throw new NotImplementedException("Enter your Twitch API Client ID and Access Token below.");
             //_twitchApi.Settings.ClientId = "YOUR_TWITCH_API_CLIENT_ID";
             //_twitchApi.Settings.AccessToken = "YOUR_TWITCH_API_ACCESS_TOKEN";
+            // TODO: Eventually get these tokens from the backend.
         }
         #endregion
         #region InitializeBotCommands
@@ -134,7 +135,7 @@ namespace JeffBot
         #region ChatClient_OnMessageReceived
         private void ChatClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
-            BotCommands.ForEach(a => a.ProcessMessage(e.ChatMessage));
+            BotCommands.ForEach(a => a.CheckExecutionPermissionsAndProcessMessage(e.ChatMessage));
         }
         #endregion
 
@@ -175,7 +176,7 @@ namespace JeffBot
         private void PubSubClient_OnPubSubServiceConnected(object sender, EventArgs e)
         {
             // SendTopics accepts an oauth optionally, which is necessary for some topics
-            //_twitchPubSubClient.SendTopics("YOUR_OAUTH_TOKEN_FOR_BEING_ABLE_TO_MARK_STREAMS");
+            //TwitchPubSubClient.SendTopics("YOUR_OAUTH_TOKEN_FOR_BEING_ABLE_TO_MARK_STREAMS");
         }
         #endregion
         #region PubSubClient_OnListenResponse
