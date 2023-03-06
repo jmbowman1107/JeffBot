@@ -21,13 +21,27 @@ namespace JeffBot
             {
                 if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeature))
                 {
-                    var command = StreamerSettings.BotFeatures.FirstOrDefault(a => a.Name == BotFeature);
-                    if (!string.IsNullOrWhiteSpace(command?.Command))
+                    var feature = StreamerSettings.BotFeatures.FirstOrDefault(a => a.Name == BotFeature);
+                    if (!string.IsNullOrWhiteSpace(feature?.Command))
                     {
-                        return command.Command;
+                        return feature.Command;
                     }
                 }
                 return DefaultKeyword;
+            }
+        }
+        #endregion
+        #region CommandPermissionLevel
+        public FeaturePermissionLevels CommandPermissionLevel
+        {
+            get
+            {
+                if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeature))
+                {
+                    var feature = StreamerSettings.BotFeatures.FirstOrDefault(a => a.Name == BotFeature);
+                    return feature.PermissionLevel;
+                }
+                return FeaturePermissionLevels.Broadcaster;
             }
         }
         #endregion
@@ -61,6 +75,39 @@ namespace JeffBot
             TwitchPubSubClient = twitchPubSubClient;
             StreamerSettings = streamerSettings;
         }
+        #endregion
+
+        #region CheckExecutionPermissionsAndProcessCommand
+        public virtual void CheckExecutionPermissionsAndProcessMessage(ChatMessage chatMessage)
+        {
+            if (!IsCommandEnabled) return;
+            var canExecuteCommand = false;
+            switch (CommandPermissionLevel)
+            {
+                case FeaturePermissionLevels.Everyone:
+                    canExecuteCommand = true;
+                    break;
+                case FeaturePermissionLevels.LoyalUser:
+                    // TODO: Implement when points system is enabled.. (over X hours watched, can use command etc..)
+                    break;
+                case FeaturePermissionLevels.Subscriber:
+                    if (chatMessage.IsSubscriber || chatMessage.IsVip || chatMessage.IsModerator || chatMessage.IsBroadcaster) canExecuteCommand = true;
+                    break;
+                case FeaturePermissionLevels.Vip:
+                    if (chatMessage.IsVip || chatMessage.IsModerator || chatMessage.IsBroadcaster) canExecuteCommand = true;
+                    break;
+                case FeaturePermissionLevels.Mod:
+                    if (chatMessage.IsModerator || chatMessage.IsBroadcaster) canExecuteCommand = true;
+                    break;
+                case FeaturePermissionLevels.SuperMod:
+                    // TODO: Implement when SuperMod (e.g. editor) functionality is implemented.
+                    break;
+                case FeaturePermissionLevels.Broadcaster:
+                    if (chatMessage.IsBroadcaster) canExecuteCommand = true;
+                    break;
+            }
+            if (canExecuteCommand) ProcessMessage(chatMessage);
+        } 
         #endregion
 
         #region ProcessMessage - IBotCommand Member

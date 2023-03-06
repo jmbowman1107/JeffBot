@@ -43,7 +43,7 @@ namespace JeffBot
             Console.WriteLine(result.FirstChoice.Message.Content);
             UsersContext[chatMessage.Username].LimitedEnqueue((whatToAsk, result.FirstChoice.Message.Content));
             // Twitch messages cannot be longer than 500 characters.. so output multiple messages if the response from the AI is too long
-            foreach (Match match in SplitToLines(result.FirstChoice.Message.Content, 500))
+            foreach (Match match in result.FirstChoice.Message.Content.SplitToLines(500))
             {
                 TwitchChatClient.SendMessage(chatMessage.Channel, $"{match.Value}");
             }
@@ -53,28 +53,21 @@ namespace JeffBot
         #region ProcessMessage - Override
         public override void ProcessMessage(ChatMessage chatMessage)
         {
-            if (IsCommandEnabled)
+            var isAmaWithMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} .*$");
+            if (isAmaWithMessage.Captures.Count > 0)
             {
-                #region Ask Me Anything
-
-                var isMarkWithMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} .*$");
-                if (isMarkWithMessage.Captures.Count > 0)
+                var questionOrText = Regex.Match(chatMessage.Message.ToLower(), @" .*$");
+                if (questionOrText.Captures.Count > 0)
                 {
-                    var questionOrText = Regex.Match(chatMessage.Message.ToLower(), @" .*$");
-                    if (questionOrText.Captures.Count > 0)
-                    {
-                        AskAnything(chatMessage, questionOrText.Captures[0].Value.Trim()).Wait();
-                    }
+                    AskAnything(chatMessage, questionOrText.Captures[0].Value.Trim()).Wait();
                 }
-
-                #endregion
             }
         }
         #endregion
         #region Initialize - Override
         public override void Initialize()
         {
-            OpenAIClient = new OpenAIClient(new OpenAIAuthentication("ADD KEY HERE"));
+            OpenAIClient = new OpenAIClient(new OpenAIAuthentication("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"));
         }
         #endregion
 
@@ -103,12 +96,6 @@ namespace JeffBot
 
             chatPrompts.Add(new ChatPrompt("user", $"{whatToAsk}"));
             return chatPrompts;
-        }
-        #endregion
-        #region SplitToLines
-        private MatchCollection SplitToLines(string stringToSplit, int maximumLineLength)
-        {
-            return Regex.Matches(stringToSplit, @"(.{1," + maximumLineLength + @"})(?:\s|$)");
         }
         #endregion
     }

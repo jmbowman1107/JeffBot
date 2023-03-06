@@ -27,24 +27,19 @@ public class JeffRpgCommand : BotCommandBase
     #region ProcessMessage - Override
     public override void ProcessMessage(ChatMessage chatMessage)
     {
-        if (IsCommandEnabled)
-        {
-            // TODO: Handle each possible command for the RPG such as:
-            // join
-            // leave
-            // explore
-            // stats
-            // party
-            // ability
-
-        }
+        // TODO: Handle each possible command for the RPG such as:
+        // join
+        // leave
+        // explore
+        // stats
+        // party
+        // ability
     }
     #endregion
     #region Initialize - Override
     public override void Initialize()
     {
         // TODO: Fetch existing player states from Amazon dynamo db (maybe?)
-
     }
     #endregion
 }
