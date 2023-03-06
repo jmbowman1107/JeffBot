@@ -4,7 +4,7 @@ namespace JeffBot
 {
     public interface IBotCommand
     {
-        void ProcessMessage(ChatMessage chatMessage);
+        void CheckExecutionPermissionsAndProcessMessage(ChatMessage chatMessage);
 
         void Initialize();
     }

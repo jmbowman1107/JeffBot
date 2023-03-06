@@ -44,21 +44,18 @@ namespace JeffBot
         #region ProcessMessage - IBotCommand Member
         public override async void ProcessMessage(ChatMessage chatMessage)
         {
-            if (IsCommandEnabled)
-            {
-                if (chatMessage.Username.Contains("hoss00312") || chatMessage.Username.Contains("idwt_"))
-                    await TwitchApiClient.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId, new BanUserRequest { Reason = "We don't tolerate hate in this channel. Goodbye.", UserId = chatMessage.UserId });
+            if (chatMessage.Username.Contains("hoss00312") || chatMessage.Username.Contains("idwt_"))
+                await TwitchApiClient.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId, new BanUserRequest { Reason = "We don't tolerate hate in this channel. Goodbye.", UserId = chatMessage.UserId });
 
-                if (chatMessage.IsFirstMessage && (chatMessage.Message.ToLower().Contains("buy followers") ||
-                                                   chatMessage.Message.ToLower().Contains(" followers") ||
-                                                   chatMessage.Message.ToLower().Contains(" viewers") ||
-                                                   chatMessage.Message.ToLower().Contains(" views")))
+            if (chatMessage.IsFirstMessage && (chatMessage.Message.ToLower().Contains("buy followers") ||
+                                               chatMessage.Message.ToLower().Contains(" followers") ||
+                                               chatMessage.Message.ToLower().Contains(" viewers") ||
+                                               chatMessage.Message.ToLower().Contains(" views")))
+            {
+                var test = TwitchApiClient.Helix.Users.GetUsersFollowsAsync(fromId: chatMessage.UserId, toId: StreamerSettings.StreamerId).Result;
+                if (test.Follows != null && !test.Follows.Any())
                 {
-                    var test = TwitchApiClient.Helix.Users.GetUsersFollowsAsync(fromId: chatMessage.UserId, toId: StreamerSettings.StreamerId).Result;
-                    if (test.Follows != null && !test.Follows.Any())
-                    {
-                        await TwitchApiClient.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId, new BanUserRequest { Reason = "We don't want what you are selling.. go away.", UserId = chatMessage.UserId });
-                    }
+                    await TwitchApiClient.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId, new BanUserRequest { Reason = "We don't want what you are selling.. go away.", UserId = chatMessage.UserId });
                 }
             }
         }
