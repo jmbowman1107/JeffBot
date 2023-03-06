@@ -48,7 +48,8 @@ namespace JeffBot
                 new AdvancedClipCommand(TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings),
                 new BanHateCommand(TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings),
                 new HeistCommand(TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings),
-                new MarkCommand(TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings)
+                new MarkCommand(TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings),
+                new AskMeAnythingCommand(TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings)
             };
             InitializeBotCommands();
         }
@@ -68,7 +69,7 @@ namespace JeffBot
         private void InitializeChat()
         {
             Console.WriteLine($"Initialize {StreamerSettings.StreamerName}'s chat as {StreamerSettings.StreamerBotName}");
-            ConnectionCredentials credentials = new ConnectionCredentials(StreamerSettings.StreamerBotName, StreamerSettings.StreamerBotOauthToken);
+            ConnectionCredentials credentials = new ConnectionCredentials(StreamerSettings.StreamerBotName, StreamerSettings.StreamerBotChatOauthToken);
             var clientOptions = new ClientOptions
             {
                 MessagesAllowedInPeriod = 750,
@@ -96,7 +97,7 @@ namespace JeffBot
         {
             TwitchApi = new TwitchAPI();
 
-            throw new NotImplementedException("Enter your Twitch API Client ID and Access Token below.");
+            // throw new NotImplementedException("Enter your Twitch API Client ID and Access Token below.");
             //_twitchApi.Settings.ClientId = "YOUR_TWITCH_API_CLIENT_ID";
             //_twitchApi.Settings.AccessToken = "YOUR_TWITCH_API_ACCESS_TOKEN";
         }
@@ -110,7 +111,7 @@ namespace JeffBot
         #region ChatClient_OnLog
         private void ChatClient_OnLog(object sender, OnLogArgs e)
         {
-            //Console.WriteLine($"{e.DateTime.ToString()}: {e.BotUsername} - {e.Data}");
+            Console.WriteLine($"{e.DateTime.ToString()}: {e.BotUsername} - {e.Data}");
         }
         #endregion
         #region ChatClient_OnDisconnected
@@ -122,7 +123,7 @@ namespace JeffBot
         #region ChatClient_OnConnected
         private void ChatClient_OnConnected(object sender, OnConnectedArgs e)
         {
-            Console.WriteLine($"Connected to {e.AutoJoinChannel}");
+            Console.WriteLine($"Connected to {e.BotUsername}");
         }
         #endregion
         #region ChatClient_OnJoinedChannel

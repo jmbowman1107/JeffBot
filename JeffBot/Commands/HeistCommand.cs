@@ -21,6 +21,12 @@ namespace JeffBot
         private CancellationTokenSource _cts;
         #endregion
 
+        #region BotFeature - Override
+        public override BotFeatures BotFeature => BotFeatures.Heist;
+        #endregion
+        #region DefaultKeyword - Override
+        public override string DefaultKeyword => "heist";
+        #endregion
         #region HeistSettings
         public HeistSettings HeistSettings { get; set; }
         #endregion
@@ -285,7 +291,7 @@ namespace JeffBot
 
                 if (HeistParticipants.Count == 8)
                 {
-                    TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), ".announce Eight people have joined the heist! Winners of this heist will receive double points!");
+                    TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), "Eight people have joined the heist! Winners of this heist will receive double points!");
                 }
 
                 HeistParticipants.Add(participant);
@@ -322,10 +328,10 @@ namespace JeffBot
         #region ProcessMessage - IBotCommand Member
         public override void ProcessMessage(ChatMessage chatMessage)
         {
-            if (StreamerSettings.BotFeatures.Contains(BotFeatures.Heist))
+            if (IsCommandEnabled)
             {
                 #region Heist Number
-                var isHeistMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!heist \d+$");
+                var isHeistMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} \d+$");
                 if (isHeistMessage.Captures.Count > 0)
                 {
                     var number = Regex.Match(chatMessage.Message, @"\d+$");
@@ -337,7 +343,7 @@ namespace JeffBot
                 #endregion
 
                 #region Heist All
-                var isHeistAllMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!heist all$");
+                var isHeistAllMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} all$");
                 if (isHeistAllMessage.Captures.Count > 0)
                 {
                     JoinHeist(chatMessage.DisplayName, true).Wait();
@@ -345,7 +351,7 @@ namespace JeffBot
                 #endregion
 
                 #region Heist Cancel
-                var isHeistCancelMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!heist cancel$");
+                var isHeistCancelMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} cancel$");
                 if (isHeistCancelMessage.Captures.Count > 0)
                 {
                     if (chatMessage.IsBroadcaster || chatMessage.IsModerator)
@@ -356,7 +362,7 @@ namespace JeffBot
                 #endregion
 
                 #region Heist Reset Me
-                var isHeistResetMeMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!heist undo$");
+                var isHeistResetMeMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} undo$");
                 if (isHeistResetMeMessage.Captures.Count > 0)
                 {
                     JoinHeist(chatMessage.DisplayName, false, null, true).Wait();

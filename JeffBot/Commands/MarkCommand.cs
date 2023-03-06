@@ -10,6 +10,13 @@ namespace JeffBot
 {
     public class MarkCommand : BotCommandBase
     {
+        #region BotFeature - Override
+        public override BotFeatures BotFeature => BotFeatures.Mark;
+        #endregion
+        #region DefaultKeyword - Override
+        public override string DefaultKeyword => "mark";
+        #endregion
+
         #region Constructor
         public MarkCommand(TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
         {
@@ -62,10 +69,10 @@ namespace JeffBot
         #region ProcessMessage - IBotCommand Member
         public override void ProcessMessage(ChatMessage chatMessage)
         {
-            if (StreamerSettings.BotFeatures.Contains(BotFeatures.Mark))
+            if (IsCommandEnabled)
             {
                 #region Mark
-                var isMarkMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!mark$");
+                var isMarkMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword}$");
                 if (isMarkMessage.Captures.Count > 0)
                 {
                     MarkStream(chatMessage);
@@ -73,7 +80,7 @@ namespace JeffBot
                 #endregion
 
                 #region Mark Message
-                var isMarkWithMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!mark .*$");
+                var isMarkWithMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} .*$");
                 if (isMarkWithMessage.Captures.Count > 0)
                 {
                     var markDescription = Regex.Match(chatMessage.Message.ToLower(), @" .*$");
