@@ -60,7 +60,14 @@ namespace JeffBot
                 if (questionOrText.Captures.Count > 0)
                 {
                     AskAnything(chatMessage, questionOrText.Captures[0].Value.Trim()).Wait();
+                    return;
                 }
+            }
+
+            var isTalkingToBot = Regex.Match(chatMessage.Message.ToLower(), @$"{StreamerSettings.StreamerBotName.ToLower()}");
+            if (isTalkingToBot.Captures.Count > 0)
+            {
+                AskAnything(chatMessage, chatMessage.Message.ToLower().Trim()).Wait();
             }
         }
         #endregion
@@ -76,10 +83,17 @@ namespace JeffBot
         {
             var chatPrompts = new List<ChatPrompt>
             {
-                new("system", $"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch. Do NOT exceed 500 characters in any response. {StreamerSettings.AdditionalAIPrompt}."),
+                new("system", $"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch."),
+                new("system", $"Prefer shorter responses, and never exceed 500 characters in any response."),
+                new("system", $"Never mention you are an AI language model in anyway."),
                 new("system", $"This message is from the user {chatMessage.DisplayName}."),
                 new("system", $"You will make up an answer, if you don't know the answer.")
             };
+
+            if (!string.IsNullOrEmpty(StreamerSettings.AdditionalAIPrompt))
+            {
+                chatPrompts.Add(new ChatPrompt("system",  StreamerSettings.AdditionalAIPrompt));
+            }
 
             if (UsersContext.ContainsKey(chatMessage.Username))
             {

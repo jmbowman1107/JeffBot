@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using TwitchLib.Api;
 using TwitchLib.Client;
+using TwitchLib.Client.Exceptions;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
 
@@ -106,7 +108,33 @@ namespace JeffBot
                     if (chatMessage.IsBroadcaster) canExecuteCommand = true;
                     break;
             }
-            if (canExecuteCommand) ProcessMessage(chatMessage);
+
+            if (canExecuteCommand)
+            {
+                try
+                {
+                    ProcessMessage(chatMessage);
+                }
+                catch (BadStateException ex)
+                {
+                    try
+                    {
+                        Console.WriteLine(ex.ToString());
+                        TwitchChatClient.Disconnect();
+                    }
+                    catch (Exception e)
+                    {
+                        // TODO: We need to find a way to recover for sure..
+                        Console.WriteLine($"Failed to reinitialize chat.. we are dead for the channel {StreamerSettings.StreamerName}");
+                        Console.WriteLine(e.ToString());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // In case we bubble up an exception..
+                    Console.WriteLine(ex.ToString());
+                }
+            }
         } 
         #endregion
 
