@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using TwitchLib.Api;
+using TwitchLib.Api.Helix.Models.Moderation.BanUser;
 using TwitchLib.Client;
-using TwitchLib.Client.Extensions;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
 
@@ -11,6 +11,13 @@ namespace JeffBot
 {
     public class BanHateCommand : BotCommandBase
     {
+        #region BotFeature - Override
+        public override BotFeatures BotFeature => BotFeatures.BanHate;
+        #endregion
+        #region DefaultKeyword - Override
+        public override string DefaultKeyword => "banhate";
+        #endregion
+
         #region Constructor
         public BanHateCommand(TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
         { }
@@ -27,7 +34,7 @@ namespace JeffBot
                 if (follower.FromUserName.Contains("hoss00312"))
                 {
                     Console.WriteLine($"Banning this MOFO {follower.FromUserName}");
-                    TwitchChatClient.BanUser(StreamerSettings.StreamerName.ToLower(), follower.FromUserName, "We don't tolerate hate in this channel. Goodbye.");
+                    await TwitchApiClient.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId, new BanUserRequest{Reason = "We don't tolerate hate in this channel. Goodbye.", UserId = follower.FromUserId});
                 }
             }
             pagination = followers.Pagination.Cursor;
@@ -35,23 +42,20 @@ namespace JeffBot
         #endregion
 
         #region ProcessMessage - IBotCommand Member
-        public override void ProcessMessage(ChatMessage chatMessage)
+        public override async void ProcessMessage(ChatMessage chatMessage)
         {
-            if (StreamerSettings.BotFeatures.Contains(BotFeatures.BanHate))
-            {
-                if (chatMessage.Username.Contains("hoss00312") || chatMessage.Username.Contains("idwt_"))
-                    TwitchChatClient.BanUser(chatMessage.Channel, chatMessage.Username, "We don't tolerate hate in this channel. Goodbye.");
+            if (chatMessage.Username.Contains("hoss00312") || chatMessage.Username.Contains("idwt_"))
+                await TwitchApiClient.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId, new BanUserRequest { Reason = "We don't tolerate hate in this channel. Goodbye.", UserId = chatMessage.UserId });
 
-                if (chatMessage.IsFirstMessage && (chatMessage.Message.ToLower().Contains("buy followers") ||
-                                                     chatMessage.Message.ToLower().Contains(" followers") ||
-                                                     chatMessage.Message.ToLower().Contains(" viewers") ||
-                                                     chatMessage.Message.ToLower().Contains(" views")))
+            if (chatMessage.IsFirstMessage && (chatMessage.Message.ToLower().Contains("buy followers") ||
+                                               chatMessage.Message.ToLower().Contains(" followers") ||
+                                               chatMessage.Message.ToLower().Contains(" viewers") ||
+                                               chatMessage.Message.ToLower().Contains(" views")))
+            {
+                var test = TwitchApiClient.Helix.Users.GetUsersFollowsAsync(fromId: chatMessage.UserId, toId: StreamerSettings.StreamerId).Result;
+                if (test.Follows != null && !test.Follows.Any())
                 {
-                    var test = TwitchApiClient.Helix.Users.GetUsersFollowsAsync(fromId: chatMessage.UserId, toId: StreamerSettings.StreamerId).Result;
-                    if (test.Follows != null && !test.Follows.Any())
-                    {
-                        TwitchChatClient.BanUser(chatMessage.Channel, chatMessage.Username, "We don't want what you are selling.. go away.");
-                    }
+                    await TwitchApiClient.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId, new BanUserRequest { Reason = "We don't want what you are selling.. go away.", UserId = chatMessage.UserId });
                 }
             }
         }
@@ -64,12 +68,12 @@ namespace JeffBot
         #endregion
 
         #region TwitchPubSubClient_OnFollow
-        private void TwitchPubSubClient_OnFollow(object sender, TwitchLib.PubSub.Events.OnFollowArgs e)
+        private async void TwitchPubSubClient_OnFollow(object sender, TwitchLib.PubSub.Events.OnFollowArgs e)
         {
-            if (StreamerSettings.BotFeatures.Contains(BotFeatures.BanHate))
+            if (IsCommandEnabled)
             {
                 if (e.Username.ToLower().Contains("hoss00312") || e.Username.ToLower().Contains("h0ss00312") || e.Username.Contains("idwt_"))
-                    TwitchChatClient.BanUser(StreamerSettings.StreamerName.ToLower(), e.Username, "We don't tolerate hate in this channel. Goodbye.");
+                    await TwitchApiClient.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId, new BanUserRequest { Reason = "We don't tolerate hate in this channel. Goodbye.", UserId = e.UserId });
             }
         }
         #endregion

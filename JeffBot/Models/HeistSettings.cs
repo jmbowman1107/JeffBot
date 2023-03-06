@@ -21,16 +21,16 @@
         public int WinnerPayoutViewers { get; set; } = 100;
         #endregion
         #region OnFirstEntryMessage
-        public string OnFirstEntryMessage { get; set; } = ".announce Eclipse! {user} is trying to get a crew together for a round of pollinating the peonies garden. Type !heist <amount> to join the crew.";
+        public string OnFirstEntryMessage { get; set; } = "Eclipse! {user} is trying to get a crew together for a round of pollinating the peonies garden. Type !heist <amount> to join the crew.";
         #endregion
         #region OnEntryMessage
         public string OnEntryMessage { get; set; } = "Ahoy! @{user} has joined the treasure hunt.";
         #endregion
         #region OnSuccessfulStartMessage
-        public string OnSuccessfulStartMessage { get; set; } = ".announce The crew fluff up their fluff and shakes their wings, getting ready to leave the comfort of the porchlight and fly to the peonies garden.";
+        public string OnSuccessfulStartMessage { get; set; } = "The crew fluff up their fluff and shakes their wings, getting ready to leave the comfort of the porchlight and fly to the peonies garden.";
         #endregion
         #region OnSuperHeistStartMessagew
-        public string OnSuperHeistStartMessage { get; set; } = ".announce What a large crew! If the heist is successful, double points will be awarded to the survivors!";
+        public string OnSuperHeistStartMessage { get; set; } = "What a large crew! If the heist is successful, double points will be awarded to the survivors!";
         #endregion
         #region OnFailedStartMessage
         public string OnFailedStartMessage { get; set; } = "Oof. {user} was spotted by a parasitic wasp and had to take a detour. No pollinating for {user.name} for now. Better luck next time!";

@@ -21,6 +21,12 @@ namespace JeffBot
         private CancellationTokenSource _cts;
         #endregion
 
+        #region BotFeature - Override
+        public override BotFeatures BotFeature => BotFeatures.Heist;
+        #endregion
+        #region DefaultKeyword - Override
+        public override string DefaultKeyword => "heist";
+        #endregion
         #region HeistSettings
         public HeistSettings HeistSettings { get; set; }
         #endregion
@@ -285,7 +291,7 @@ namespace JeffBot
 
                 if (HeistParticipants.Count == 8)
                 {
-                    TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), ".announce Eight people have joined the heist! Winners of this heist will receive double points!");
+                    TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), "Eight people have joined the heist! Winners of this heist will receive double points!");
                 }
 
                 HeistParticipants.Add(participant);
@@ -322,60 +328,57 @@ namespace JeffBot
         #region ProcessMessage - IBotCommand Member
         public override void ProcessMessage(ChatMessage chatMessage)
         {
-            if (StreamerSettings.BotFeatures.Contains(BotFeatures.Heist))
+            #region Heist Number
+            var isHeistMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} \d+$");
+            if (isHeistMessage.Captures.Count > 0)
             {
-                #region Heist Number
-                var isHeistMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!heist \d+$");
-                if (isHeistMessage.Captures.Count > 0)
+                var number = Regex.Match(chatMessage.Message, @"\d+$");
+                if (number.Captures.Count > 0)
                 {
-                    var number = Regex.Match(chatMessage.Message, @"\d+$");
-                    if (number.Captures.Count > 0)
-                    {
-                        this.JoinHeist(chatMessage.DisplayName, false, Convert.ToInt32(number.Captures[0].Value)).Wait();
-                    }
+                    this.JoinHeist(chatMessage.DisplayName, false, Convert.ToInt32(number.Captures[0].Value)).Wait();
                 }
-                #endregion
-
-                #region Heist All
-                var isHeistAllMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!heist all$");
-                if (isHeistAllMessage.Captures.Count > 0)
-                {
-                    JoinHeist(chatMessage.DisplayName, true).Wait();
-                }
-                #endregion
-
-                #region Heist Cancel
-                var isHeistCancelMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!heist cancel$");
-                if (isHeistCancelMessage.Captures.Count > 0)
-                {
-                    if (chatMessage.IsBroadcaster || chatMessage.IsModerator)
-                    {
-                        EndHeist(true).Wait();
-                    }
-                }
-                #endregion
-
-                #region Heist Reset Me
-                var isHeistResetMeMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!heist undo$");
-                if (isHeistResetMeMessage.Captures.Count > 0)
-                {
-                    JoinHeist(chatMessage.DisplayName, false, null, true).Wait();
-                }
-                #endregion
-
-                #region Heist Rez
-                var isHeistRezMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!rez \S+$");
-                if (isHeistRezMessage.Captures.Count > 0)
-                {
-                    var personToRez = chatMessage.Message.Replace("!rez ", string.Empty);
-                    if (personToRez.StartsWith("@"))
-                    {
-                        personToRez = personToRez.Remove(0, 1);
-                    }
-                    RezUser(chatMessage.DisplayName, personToRez).Wait();
-                }
-                #endregion
             }
+            #endregion
+
+            #region Heist All
+            var isHeistAllMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} all$");
+            if (isHeistAllMessage.Captures.Count > 0)
+            {
+                JoinHeist(chatMessage.DisplayName, true).Wait();
+            }
+            #endregion
+
+            #region Heist Cancel
+            var isHeistCancelMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} cancel$");
+            if (isHeistCancelMessage.Captures.Count > 0)
+            {
+                if (chatMessage.IsBroadcaster || chatMessage.IsModerator)
+                {
+                    EndHeist(true).Wait();
+                }
+            }
+            #endregion
+
+            #region Heist Reset Me
+            var isHeistResetMeMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} undo$");
+            if (isHeistResetMeMessage.Captures.Count > 0)
+            {
+                JoinHeist(chatMessage.DisplayName, false, null, true).Wait();
+            }
+            #endregion
+
+            #region Heist Rez
+            var isHeistRezMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!rez \S+$");
+            if (isHeistRezMessage.Captures.Count > 0)
+            {
+                var personToRez = chatMessage.Message.Replace("!rez ", string.Empty);
+                if (personToRez.StartsWith("@"))
+                {
+                    personToRez = personToRez.Remove(0, 1);
+                }
+                RezUser(chatMessage.DisplayName, personToRez).Wait();
+            }
+            #endregion
         }
         #endregion
         #region Initialize - IBotCommand Method

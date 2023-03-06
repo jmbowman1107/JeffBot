@@ -15,6 +15,13 @@ namespace JeffBot
 {
     public class AdvancedClipCommand : BotCommandBase
     {
+        #region BotFeature - Override
+        public override BotFeatures BotFeature => BotFeatures.Clip;
+        #endregion
+        #region DefaultKeyword - Override
+        public override string DefaultKeyword => "clip";
+        #endregion
+
         #region NoobHunterFormUrl
         public string NoobHunterFormUrl { get; set; } = "http://bit.ly/NHClips";
         #endregion
@@ -88,6 +95,7 @@ namespace JeffBot
         public void ValidateAndPostToNoobHuner(ChatMessage chatMessage)
         {
             string url = string.Empty;
+            KeyValuePair<string, (string url, DateTime dateTime)> recentClip = new KeyValuePair<string, (string url, DateTime dateTime)>("default user", (string.Empty, DateTime.Now));
 
             if (MostRecentClips.TryGetValue(chatMessage.Username, out (string url, DateTime dateTime) clip))
             {
@@ -97,7 +105,8 @@ namespace JeffBot
             {
                 if (MostRecentClips.Count > 0)
                 {
-                    url = MostRecentClips.FirstOrDefault(a => a.Value.dateTime == MostRecentClips.Max(b => b.Value.dateTime)).Value.url;
+                    recentClip = MostRecentClips.FirstOrDefault(a => a.Value.dateTime == MostRecentClips.Max(b => b.Value.dateTime));
+                    url = recentClip.Value.url;
                 }
             }
             else
@@ -110,7 +119,14 @@ namespace JeffBot
                 if (result.success)
                 {
                     MostRecentClips.Remove(chatMessage.Username);
-                    TwitchChatClient.SendMessage(chatMessage.Channel, $"{chatMessage.DisplayName}, your clip has been successfully submitted to NoobHunter!");
+                    if (recentClip.Key != "default user")
+                    {
+                        TwitchChatClient.SendMessage(chatMessage.Channel, $"{chatMessage.DisplayName}, {recentClip.Key}'s clip has been successfully submitted to NoobHunter!");
+                    }
+                    else
+                    {
+                        TwitchChatClient.SendMessage(chatMessage.Channel, $"{chatMessage.DisplayName}, your clip has been successfully submitted to NoobHunter!");
+                    }
                 }
                 else
                 {
@@ -183,21 +199,21 @@ namespace JeffBot
         #region ProcessMessage - IBotCommand Member
         public override void ProcessMessage(ChatMessage chatMessage)
         {
-            if (StreamerSettings.BotFeatures.Contains(BotFeatures.Clip))
+            if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatures.Clip))
             {
                 #region Clip
-                var isClipMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!clip$");
+                var isClipMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword}$");
                 if (isClipMessage.Captures.Count > 0)
                 {
-                    CreateTwitchClip(chatMessage, StreamerSettings.BotFeatures.Contains(BotFeatures.AdvancedClip));
+                    CreateTwitchClip(chatMessage, StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatures.AdvancedClip));
                 }
                 #endregion
             }
 
-            if (StreamerSettings.BotFeatures.Contains(BotFeatures.AdvancedClip))
+            if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatures.AdvancedClip))
             {
                 #region Clip Noobhunter
-                var isPostNoobHunter = Regex.Match(chatMessage.Message.ToLower(), @"^!clip noobhunter$");
+                var isPostNoobHunter = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} noobhunter$");
                 if (isPostNoobHunter.Captures.Count > 0)
                 {
                     ValidateAndPostToNoobHuner(chatMessage);
