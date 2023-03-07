@@ -67,7 +67,7 @@ namespace JeffBot
             var isTalkingToBot = Regex.Match(chatMessage.Message.ToLower(), @$"{StreamerSettings.StreamerBotName.ToLower()}");
             if (isTalkingToBot.Captures.Count > 0)
             {
-                AskAnything(chatMessage, chatMessage.Message.ToLower().Trim()).Wait();
+                if (chatMessage.Username.ToLower() != StreamerSettings.StreamerBotName.ToLower()) AskAnything(chatMessage, chatMessage.Message.ToLower().Trim()).Wait();
             }
         }
         #endregion
