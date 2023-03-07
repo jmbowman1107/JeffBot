@@ -117,16 +117,15 @@ namespace JeffBot
                 }
                 catch (BadStateException ex)
                 {
-                    try
+                    // TODO: Root cause fix this at some point.. Seems to be something weird going on in twitchlib.. sometimes it intiializes.. but doesn't join according to the library..
+                    TwitchChatClient.JoinChannel($"{StreamerSettings.StreamerName.ToLower()}");
+                }
+                catch (AggregateException aex)
+                {
+                    if (aex.InnerException is BadStateException bse)
                     {
-                        Console.WriteLine(ex.ToString());
-                        TwitchChatClient.Disconnect();
-                    }
-                    catch (Exception e)
-                    {
-                        // TODO: We need to find a way to recover for sure..
-                        Console.WriteLine($"Failed to reinitialize chat.. we are dead for the channel {StreamerSettings.StreamerName}");
-                        Console.WriteLine(e.ToString());
+                        // TODO: Root cause fix this at some point.. Seems to be something weird going on in twitchlib.. sometimes it intiializes.. but doesn't join according to the library..
+                        TwitchChatClient.JoinChannel($"{StreamerSettings.StreamerName.ToLower()}");
                     }
                 }
                 catch (Exception ex)

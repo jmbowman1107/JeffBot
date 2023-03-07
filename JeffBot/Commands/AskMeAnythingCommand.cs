@@ -83,11 +83,7 @@ namespace JeffBot
         {
             var chatPrompts = new List<ChatPrompt>
             {
-                new("system", $"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch."),
-                new("system", $"Prefer shorter responses, and never exceed 500 characters in any response."),
-                new("system", $"Never mention you are an AI language model in anyway."),
-                new("system", $"This message is from the user {chatMessage.DisplayName}."),
-                new("system", $"You will make up an answer, if you don't know the answer.")
+                new("system", $"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch. Prefer shorter responses, and never exceed 500 characters in any response. Never mention you are an AI language model in anyway. You will make up an answer, if you don't know the answer. This message is from the user {chatMessage.DisplayName}."),
             };
 
             if (!string.IsNullOrEmpty(StreamerSettings.AdditionalAIPrompt))
