@@ -57,17 +57,22 @@ namespace JeffBot
         #endregion
 
         #region CheckExecutionPermissionsAndExecuteCommand - IBotCommand Member
-        public virtual void CheckExecutionPermissionsAndExecuteCommand(ChatMessage chatMessage)
+        public async Task CheckExecutionPermissionsAndExecuteCommand(ChatMessage chatMessage)
         {
             if (!IsCommandEnabled) return;
             var canExecuteCommand = UserHasPermission(chatMessage);
             if (canExecuteCommand) canExecuteCommand = CheckCooldowns(chatMessage, canExecuteCommand);
-            if (canExecuteCommand) ExecuteCommand(chatMessage);
+            if (canExecuteCommand) await ExecuteCommand(chatMessage);
         }
         #endregion
 
         #region ProcessMessage - IBotCommand Member - Abstract
-        public abstract Task ProcessMessage(ChatMessage chatMessage);
+        /// <summary>
+        /// Attempts to process the message, if the message was a valid message for the command, return true, else return false.
+        /// </summary>
+        /// <param name="chatMessage"></param>
+        /// <returns></returns>
+        public abstract Task<bool> ProcessMessage(ChatMessage chatMessage);
         #endregion
         #region Initialize - IBotCommand Member - Abstract
         public abstract void Initialize();
@@ -107,7 +112,7 @@ namespace JeffBot
         }
         #endregion
         #region CheckCooldowns
-        private bool CheckCooldowns(ChatMessage chatMessage, bool canExecuteCommand)
+        public bool CheckCooldowns(ChatMessage chatMessage, bool canExecuteCommand)
         {
             if (DateTimeOffset.UtcNow >= _lastExecuted.AddSeconds(BotCommandSettings.GlobalCooldown))
             {
@@ -126,13 +131,15 @@ namespace JeffBot
         }
         #endregion
         #region ExecuteCommand
-        private void ExecuteCommand(ChatMessage chatMessage)
+        private async Task ExecuteCommand(ChatMessage chatMessage)
         {
             try
             {
-                _lastExecuted = DateTimeOffset.UtcNow;
-                _usersLastExecuted[chatMessage.Username.ToLower()] = DateTimeOffset.UtcNow;
-                ProcessMessage(chatMessage);
+                if (await ProcessMessage(chatMessage))
+                {
+                    _lastExecuted = DateTimeOffset.UtcNow;
+                    _usersLastExecuted[chatMessage.Username.ToLower()] = DateTimeOffset.UtcNow;
+                }
             }
             catch (BadStateException)
             {

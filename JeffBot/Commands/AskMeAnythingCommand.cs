@@ -44,7 +44,7 @@ namespace JeffBot
         #endregion
 
         #region ProcessMessage - Override
-        public override async Task ProcessMessage(ChatMessage chatMessage)
+        public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
         {
             var isAmaWithMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} .*$");
             if (isAmaWithMessage.Captures.Count > 0)
@@ -53,15 +53,21 @@ namespace JeffBot
                 if (questionOrText.Captures.Count > 0)
                 {
                     await AskAnything(chatMessage, questionOrText.Captures[0].Value.Trim());
-                    return;
+                    return true;
                 }
             }
 
             var isTalkingToBot = Regex.Match(chatMessage.Message.ToLower(), @$"{StreamerSettings.StreamerBotName.ToLower()}");
             if (isTalkingToBot.Captures.Count > 0)
             {
-                if (chatMessage.Username.ToLower() != StreamerSettings.StreamerBotName.ToLower()) await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim());
+                if (chatMessage.Username.ToLower() != StreamerSettings.StreamerBotName.ToLower())
+                {
+                    await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim());
+                    return true;
+                }
             }
+
+            return false;
         }
         #endregion
         #region Initialize - Override

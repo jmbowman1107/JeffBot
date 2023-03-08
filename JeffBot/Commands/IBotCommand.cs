@@ -15,8 +15,8 @@ namespace JeffBot
         ITwitchPubSub TwitchPubSubClient { get; set; }
         StreamerSettings StreamerSettings { get; set; }
 
-        Task ProcessMessage(ChatMessage chatMessage);
-        void CheckExecutionPermissionsAndExecuteCommand(ChatMessage chatMessage);
+        Task<bool> ProcessMessage(ChatMessage chatMessage);
+        Task CheckExecutionPermissionsAndExecuteCommand(ChatMessage chatMessage);
         void Initialize();
     }
 }

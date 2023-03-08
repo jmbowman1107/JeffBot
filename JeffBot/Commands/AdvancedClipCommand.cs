@@ -184,7 +184,7 @@ namespace JeffBot
         #endregion
 
         #region ProcessMessage - IBotCommand Member
-        public override async Task ProcessMessage(ChatMessage chatMessage)
+        public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
         {
             if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatureName.Clip.ToString() || a.Name == BotFeatureName.AdvancedClip.ToString()))
             {
@@ -207,6 +207,8 @@ namespace JeffBot
                 }
                 #endregion
             }
+
+            return false;
         }
         #endregion
         #region Initialize - IBotCommand Member

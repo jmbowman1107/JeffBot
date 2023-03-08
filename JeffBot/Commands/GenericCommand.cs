@@ -16,7 +16,7 @@ public class GenericCommand : BotCommandBase
     #endregion
 
     #region ProcessMessage - Override
-    public override Task ProcessMessage(ChatMessage chatMessage)
+    public override Task<bool> ProcessMessage(ChatMessage chatMessage)
     {
         // TODO: Check if trigger word
         // TODO: Check if any of the additional trigger words

@@ -20,7 +20,7 @@ public class JeffRpgCommand : BotCommandBase
     #endregion
 
     #region ProcessMessage - Override
-    public override Task ProcessMessage(ChatMessage chatMessage)
+    public override Task<bool> ProcessMessage(ChatMessage chatMessage)
     {
         return null;
         // TODO: Handle each possible command for the RPG such as:

@@ -322,7 +322,7 @@ namespace JeffBot
         #endregion
 
         #region ProcessMessage - IBotCommand Member
-        public override async Task ProcessMessage(ChatMessage chatMessage)
+        public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
         {
             #region Heist Number
             var isHeistMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} \d+$");
@@ -375,6 +375,8 @@ namespace JeffBot
                 await RezUser(chatMessage.DisplayName, personToRez);
             }
             #endregion
+
+            return false;
         }
         #endregion
         #region Initialize - IBotCommand Method

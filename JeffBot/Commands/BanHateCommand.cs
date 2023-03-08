@@ -38,7 +38,7 @@ namespace JeffBot
         #endregion
 
         #region ProcessMessage - IBotCommand Member
-        public override async Task ProcessMessage(ChatMessage chatMessage)
+        public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
         {
             if (chatMessage.Username.Contains("hoss00312") || chatMessage.Username.Contains("idwt_"))
                 await TwitchApiClient.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId, new BanUserRequest { Reason = "We don't tolerate hate in this channel. Goodbye.", UserId = chatMessage.UserId });
@@ -54,6 +54,8 @@ namespace JeffBot
                     await TwitchApiClient.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId, new BanUserRequest { Reason = "We don't want what you are selling.. go away.", UserId = chatMessage.UserId });
                 }
             }
+
+            return false;
         }
         #endregion
         #region Initialize - IBotCommand Member

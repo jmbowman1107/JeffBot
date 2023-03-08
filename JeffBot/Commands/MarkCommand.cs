@@ -22,21 +22,14 @@ namespace JeffBot
         {
             try
             {
-                if (chatMessage.IsVip || chatMessage.IsModerator || chatMessage.IsBroadcaster)
+                var mark = await TwitchApiClient.Helix.Streams.CreateStreamMarkerAsync(new CreateStreamMarkerRequest { Description = markMessage, UserId = StreamerSettings.StreamerId });
+                if (markMessage != "Marked from bot.")
                 {
-                    var mark = await TwitchApiClient.Helix.Streams.CreateStreamMarkerAsync(new CreateStreamMarkerRequest { Description = markMessage, UserId = StreamerSettings.StreamerId });
-                    if (markMessage != "Marked from bot.")
-                    {
-                        TwitchChatClient.SendMessage(chatMessage.Channel, $"Stream successfully marked with description: \"{markMessage}\"");
-                    }
-                    else
-                    {
-                        TwitchChatClient.SendMessage(chatMessage.Channel, "Stream successfully marked.");
-                    }
+                    TwitchChatClient.SendMessage(chatMessage.Channel, $"Stream successfully marked with description: \"{markMessage}\"");
                 }
                 else
                 {
-                    TwitchChatClient.SendMessage(chatMessage.Channel, $"Sorry {chatMessage.Username}, only {chatMessage.Channel}, VIPS, and Moderators can mark the stream.");
+                    TwitchChatClient.SendMessage(chatMessage.Channel, "Stream successfully marked.");
                 }
             }
             catch (Exception ex)
@@ -61,13 +54,14 @@ namespace JeffBot
         #endregion
 
         #region ProcessMessage - IBotCommand Member
-        public override async Task ProcessMessage(ChatMessage chatMessage)
+        public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
         {
             #region Mark
             var isMarkMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord}$");
             if (isMarkMessage.Captures.Count > 0)
             {
                 await MarkStream(chatMessage);
+                return true;
             }
             #endregion
 
@@ -79,9 +73,12 @@ namespace JeffBot
                 if (markDescription.Captures.Count > 0)
                 {
                     await MarkStream(chatMessage, markDescription.Captures[0].Value.Trim());
+                    return true;
                 }
             }
             #endregion
+
+            return false;
         }
         #endregion
         #region Initialize - IBotCommand Member
