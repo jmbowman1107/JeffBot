@@ -26,7 +26,7 @@ namespace JeffBot
         public FeaturePermissionLevel PermissionLevel { get; set; } = FeaturePermissionLevel.Broadcaster;
         #endregion
         #region GlobalCooldown
-        public int GlobalCooldown { get; set; } = 5;
+        public int GlobalCooldown { get; set; } = 0;
         #endregion
         #region UserCooldown
         public int UserCooldown { get; set; } = 0;
