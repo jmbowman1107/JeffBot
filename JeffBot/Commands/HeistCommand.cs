@@ -21,12 +21,6 @@ namespace JeffBot
         private CancellationTokenSource _cts;
         #endregion
 
-        #region BotFeature - Override
-        public override BotFeatures BotFeature => BotFeatures.Heist;
-        #endregion
-        #region DefaultKeyword - Override
-        public override string DefaultKeyword => "heist";
-        #endregion
         #region HeistSettings
         public HeistSettings HeistSettings { get; set; }
         #endregion
@@ -44,10 +38,12 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public HeistCommand(TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
+        public HeistCommand(BotCommandSettings botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
         {
             StreamElementsClient = new StreamElementsClient { ChannelId = streamerSettings.StreamElementsChannelId, JwtTokenString = streamerSettings.StreamElementsJwtToken };
             HeistSettings = new HeistSettings();
+            BotCommandSettings.GlobalCooldown = 0;
+            BotCommandSettings.UserCooldown = 0;
         }
         #endregion
 
@@ -326,44 +322,44 @@ namespace JeffBot
         #endregion
 
         #region ProcessMessage - IBotCommand Member
-        public override void ProcessMessage(ChatMessage chatMessage)
+        public override async Task ProcessMessage(ChatMessage chatMessage)
         {
             #region Heist Number
-            var isHeistMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} \d+$");
+            var isHeistMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} \d+$");
             if (isHeistMessage.Captures.Count > 0)
             {
                 var number = Regex.Match(chatMessage.Message, @"\d+$");
                 if (number.Captures.Count > 0)
                 {
-                    this.JoinHeist(chatMessage.DisplayName, false, Convert.ToInt32(number.Captures[0].Value)).Wait();
+                    await this.JoinHeist(chatMessage.DisplayName, false, Convert.ToInt32(number.Captures[0].Value));
                 }
             }
             #endregion
 
             #region Heist All
-            var isHeistAllMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} all$");
+            var isHeistAllMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} all$");
             if (isHeistAllMessage.Captures.Count > 0)
             {
-                JoinHeist(chatMessage.DisplayName, true).Wait();
+                await JoinHeist(chatMessage.DisplayName, true);
             }
             #endregion
 
             #region Heist Cancel
-            var isHeistCancelMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} cancel$");
+            var isHeistCancelMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} cancel$");
             if (isHeistCancelMessage.Captures.Count > 0)
             {
                 if (chatMessage.IsBroadcaster || chatMessage.IsModerator)
                 {
-                    EndHeist(true).Wait();
+                    await EndHeist(true);
                 }
             }
             #endregion
 
             #region Heist Reset Me
-            var isHeistResetMeMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} undo$");
+            var isHeistResetMeMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} undo$");
             if (isHeistResetMeMessage.Captures.Count > 0)
             {
-                JoinHeist(chatMessage.DisplayName, false, null, true).Wait();
+                await JoinHeist(chatMessage.DisplayName, false, null, true);
             }
             #endregion
 
@@ -376,7 +372,7 @@ namespace JeffBot
                 {
                     personToRez = personToRez.Remove(0, 1);
                 }
-                RezUser(chatMessage.DisplayName, personToRez).Wait();
+                await RezUser(chatMessage.DisplayName, personToRez);
             }
             #endregion
         }

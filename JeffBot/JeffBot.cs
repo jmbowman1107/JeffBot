@@ -39,22 +39,49 @@ namespace JeffBot
         public JeffBot(StreamerSettings streamerSettings)
         {
             StreamerSettings = streamerSettings;
-            InitializePubSub();
-            InitializeChat();
-            InitializeTwitchApi();
-            // TODO: This should be done when creating the bot for each streamer (e.g. in the Web Project). This is so eventually there can be a backend that feeds this.
-            BotCommands = new List<IBotCommand>()
-            {
-                new AdvancedClipCommand(TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings),
-                new BanHateCommand(TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings),
-                new HeistCommand(TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings),
-                new MarkCommand(TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings),
-                new AskMeAnythingCommand(TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings)
-            };
-            InitializeBotCommands();
+            InitializeBotForStreamer();
         }
         #endregion
 
+        #region InitializeBotForStreamer
+        private void InitializeBotForStreamer()
+        {
+            InitializePubSub();
+            InitializeChat();
+            InitializeTwitchApi();
+
+            // TODO: This should be done when creating the bot for each streamer (e.g. in the Web Project). This is so eventually there can be a backend that feeds this.
+            BotCommands = new List<IBotCommand>();
+            foreach (var botFeature in StreamerSettings.BotFeatures)
+            {
+                switch (botFeature.Name)
+                {
+                    case nameof(BotFeatureName.BanHate):
+                        BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                        break;
+                    case nameof(BotFeatureName.Heist):
+                        BotCommands.Add(new HeistCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                        break;
+                    case nameof(BotFeatureName.JeffRpg):
+                        BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                        break;
+                    case nameof(BotFeatureName.Clip):
+                        BotCommands.Add(new AdvancedClipCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                        break;
+                    case nameof(BotFeatureName.AdvancedClip):
+                        BotCommands.Add(new AdvancedClipCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                        break;
+                    case nameof(BotFeatureName.Mark):
+                        BotCommands.Add(new MarkCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                        break;
+                    case nameof(BotFeatureName.AskMeAnything):
+                        BotCommands.Add(new AskMeAnythingCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                        break;
+                }
+            }
+            InitializeBotCommands();
+        }
+        #endregion
         #region InitializePubSub
         private void InitializePubSub()
         {
@@ -116,7 +143,7 @@ namespace JeffBot
         }
         #endregion
         #region ChatClient_OnDisconnected
-        private void ChatClient_OnDisconnected(object? sender, OnDisconnectedEventArgs e)
+        private void ChatClient_OnDisconnected(object sender, OnDisconnectedEventArgs e)
         {
             WaitAndAttemptReconnection();
         }
@@ -136,7 +163,7 @@ namespace JeffBot
         #region ChatClient_OnMessageReceived
         private void ChatClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
-            BotCommands.ForEach(a => a.CheckExecutionPermissionsAndProcessMessage(e.ChatMessage));
+            BotCommands.ForEach(a => a.CheckExecutionPermissionsAndExecuteCommand(e.ChatMessage));
         }
         #endregion
 
@@ -178,6 +205,7 @@ namespace JeffBot
         {
             // SendTopics accepts an oauth optionally, which is necessary for some topics
             //TwitchPubSubClient.SendTopics("YOUR_OAUTH_TOKEN_FOR_BEING_ABLE_TO_MARK_STREAMS");
+
         }
         #endregion
         #region PubSubClient_OnListenResponse

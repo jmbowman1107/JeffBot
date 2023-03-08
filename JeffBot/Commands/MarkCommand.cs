@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Streams.CreateStreamMarker;
 using TwitchLib.Client;
@@ -10,27 +11,20 @@ namespace JeffBot
 {
     public class MarkCommand : BotCommandBase
     {
-        #region BotFeature - Override
-        public override BotFeatures BotFeature => BotFeatures.Mark;
-        #endregion
-        #region DefaultKeyword - Override
-        public override string DefaultKeyword => "mark";
-        #endregion
-
         #region Constructor
-        public MarkCommand(TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
+        public MarkCommand(BotCommandSettings botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
         {
         }
         #endregion
 
         #region MarkStream
-        private void MarkStream(ChatMessage chatMessage, string markMessage = "Marked from bot.")
+        private async Task MarkStream(ChatMessage chatMessage, string markMessage = "Marked from bot.")
         {
             try
             {
                 if (chatMessage.IsVip || chatMessage.IsModerator || chatMessage.IsBroadcaster)
                 {
-                    var mark = TwitchApiClient.Helix.Streams.CreateStreamMarkerAsync(new CreateStreamMarkerRequest { Description = markMessage, UserId = StreamerSettings.StreamerId }).Result;
+                    var mark = await TwitchApiClient.Helix.Streams.CreateStreamMarkerAsync(new CreateStreamMarkerRequest { Description = markMessage, UserId = StreamerSettings.StreamerId });
                     if (markMessage != "Marked from bot.")
                     {
                         TwitchChatClient.SendMessage(chatMessage.Channel, $"Stream successfully marked with description: \"{markMessage}\"");
@@ -67,24 +61,24 @@ namespace JeffBot
         #endregion
 
         #region ProcessMessage - IBotCommand Member
-        public override void ProcessMessage(ChatMessage chatMessage)
+        public override async Task ProcessMessage(ChatMessage chatMessage)
         {
             #region Mark
-            var isMarkMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword}$");
+            var isMarkMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord}$");
             if (isMarkMessage.Captures.Count > 0)
             {
-                MarkStream(chatMessage);
+                await MarkStream(chatMessage);
             }
             #endregion
 
             #region Mark Message
-            var isMarkWithMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} .*$");
+            var isMarkWithMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} .*$");
             if (isMarkWithMessage.Captures.Count > 0)
             {
                 var markDescription = Regex.Match(chatMessage.Message.ToLower(), @" .*$");
                 if (markDescription.Captures.Count > 0)
                 {
-                    MarkStream(chatMessage, markDescription.Captures[0].Value.Trim());
+                    await MarkStream(chatMessage, markDescription.Captures[0].Value.Trim());
                 }
             }
             #endregion

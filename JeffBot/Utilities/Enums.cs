@@ -1,6 +1,6 @@
 ﻿namespace JeffBot
 {
-    public enum BotFeatures
+    public enum BotFeatureName
     {
         BanHate,
         Heist,
@@ -11,7 +11,7 @@
         AskMeAnything
     }
 
-    public enum FeaturePermissionLevels
+    public enum FeaturePermissionLevel
     {
         Everyone,
         LoyalUser,
@@ -20,5 +20,12 @@
         Mod,
         SuperMod,
         Broadcaster
+    }
+
+    public enum CommandAvailability
+    {
+        Online,
+        Offline,
+        Both
     }
 }

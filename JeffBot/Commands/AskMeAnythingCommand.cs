@@ -21,15 +21,8 @@ namespace JeffBot
         public OpenAIClient OpenAIClient { get; set; }
         #endregion
 
-        #region BotFeature - Override
-        public override BotFeatures BotFeature => BotFeatures.AskMeAnything;
-        #endregion
-        #region DefaultKeyword - Override
-        public override string DefaultKeyword => "ama";
-        #endregion
-
         #region Constructor
-        public AskMeAnythingCommand(TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
+        public AskMeAnythingCommand(BotCommandSettings botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
         {
         }
         #endregion
@@ -38,7 +31,7 @@ namespace JeffBot
         public async Task AskAnything(ChatMessage chatMessage, string whatToAsk)
         {
             var chatPrompts = GenerateChatPromptsForUser(chatMessage, whatToAsk);
-            var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 200, presencePenalty: 0.1, frequencyPenalty: 0.1));
+            var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
 
             Console.WriteLine(result.FirstChoice.Message.Content);
             UsersContext[chatMessage.Username].LimitedEnqueue((whatToAsk, result.FirstChoice.Message.Content));
@@ -51,15 +44,15 @@ namespace JeffBot
         #endregion
 
         #region ProcessMessage - Override
-        public override void ProcessMessage(ChatMessage chatMessage)
+        public override async Task ProcessMessage(ChatMessage chatMessage)
         {
-            var isAmaWithMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} .*$");
+            var isAmaWithMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} .*$");
             if (isAmaWithMessage.Captures.Count > 0)
             {
                 var questionOrText = Regex.Match(chatMessage.Message.ToLower(), @" .*$");
                 if (questionOrText.Captures.Count > 0)
                 {
-                    AskAnything(chatMessage, questionOrText.Captures[0].Value.Trim()).Wait();
+                    await AskAnything(chatMessage, questionOrText.Captures[0].Value.Trim());
                     return;
                 }
             }
@@ -67,7 +60,7 @@ namespace JeffBot
             var isTalkingToBot = Regex.Match(chatMessage.Message.ToLower(), @$"{StreamerSettings.StreamerBotName.ToLower()}");
             if (isTalkingToBot.Captures.Count > 0)
             {
-                if (chatMessage.Username.ToLower() != StreamerSettings.StreamerBotName.ToLower()) AskAnything(chatMessage, chatMessage.Message.ToLower().Trim()).Wait();
+                if (chatMessage.Username.ToLower() != StreamerSettings.StreamerBotName.ToLower()) await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim());
             }
         }
         #endregion

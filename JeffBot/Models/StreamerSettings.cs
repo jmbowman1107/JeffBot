@@ -31,8 +31,8 @@ namespace JeffBot
         #region AdditionalAIPrompt 
         public string AdditionalAIPrompt { get; set; }
         #endregion
-        #region BotFeatures
-        public List<BotFeature> BotFeatures { get; set; } 
+        #region BotFeatureName
+        public List<BotCommandSettings> BotFeatures { get; set; } 
         #endregion
     }
 }

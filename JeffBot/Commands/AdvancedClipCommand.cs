@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Clips.CreateClip;
 using TwitchLib.Client;
@@ -15,13 +16,6 @@ namespace JeffBot
 {
     public class AdvancedClipCommand : BotCommandBase
     {
-        #region BotFeature - Override
-        public override BotFeatures BotFeature => BotFeatures.Clip;
-        #endregion
-        #region DefaultKeyword - Override
-        public override string DefaultKeyword => "clip";
-        #endregion
-
         #region NoobHunterFormUrl
         public string NoobHunterFormUrl { get; set; } = "http://bit.ly/NHClips";
         #endregion
@@ -30,43 +24,36 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public AdvancedClipCommand(TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
+        public AdvancedClipCommand(BotCommandSettings botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
         {
         }
         #endregion
 
         #region CreateTwitchClip
-        public void CreateTwitchClip(ChatMessage chatMessage, bool canPerformAdvancedClip)
+        public async Task CreateTwitchClip(ChatMessage chatMessage, bool canPerformAdvancedClip)
         {
             CreatedClipResponse clip = null;
             try
             {
-                //if (chatMessage.IsVip || chatMessage.IsModerator || chatMessage.IsBroadcaster || chatMessage.IsSubscriber)
-                //{
-                    var isLive = TwitchApiClient.Helix.Streams.GetStreamsAsync(userIds: new List<string> { StreamerSettings.StreamerId }).Result;
-                    if (!isLive.Streams.Any())
-                    {
-                        TwitchChatClient.SendMessage(chatMessage.Channel, $"Cannot create clip for an offline stream.");
-                        return;
-                    }
-                    clip = TwitchApiClient.Helix.Clips.CreateClipAsync(StreamerSettings.StreamerId).Result;
+                var isLive = await TwitchApiClient.Helix.Streams.GetStreamsAsync(userIds: new List<string> { StreamerSettings.StreamerId });
+                if (!isLive.Streams.Any())
+                {
+                    TwitchChatClient.SendMessage(chatMessage.Channel, $"Cannot create clip for an offline stream.");
+                    return;
+                }
+                clip = await TwitchApiClient.Helix.Clips.CreateClipAsync(StreamerSettings.StreamerId);
 
-                    if (clip != null && clip.CreatedClips.Any())
-                    {
-                        TwitchChatClient.SendMessage(chatMessage.Channel, $"Clip created successfully {clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty)}");
-                        MostRecentClips[chatMessage.Username] = (clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty), DateTime.UtcNow);
-                        if (canPerformAdvancedClip) TwitchChatClient.SendMessage(chatMessage.Channel, $"@{chatMessage.DisplayName} you can submit this clip to NoobHunter for consideration by typing \"!clip noobhunter\" in chat.");
+                if (clip != null && clip.CreatedClips.Any())
+                {
+                    TwitchChatClient.SendMessage(chatMessage.Channel, $"Clip created successfully {clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty)}");
+                    MostRecentClips[chatMessage.Username] = (clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty), DateTime.UtcNow);
+                    if (canPerformAdvancedClip) TwitchChatClient.SendMessage(chatMessage.Channel, $"@{chatMessage.DisplayName} you can submit this clip to NoobHunter for consideration by typing \"!clip noobhunter\" in chat.");
 
-                    }
-                    else
-                    {
-                        TwitchChatClient.SendMessage(chatMessage.Channel, $"Stream NOT successfully clipped.");
-                    }
-                //}
-                //else
-                //{
-                //    TwitchChatClient.SendMessage(chatMessage.Channel, $"Sorry {chatMessage.DisplayName}, only {chatMessage.Channel}, Subscribers, VIPS, and Moderators can clip the stream from chat.");
-                //}
+                }
+                else
+                {
+                    TwitchChatClient.SendMessage(chatMessage.Channel, $"Stream NOT successfully clipped.");
+                }
             }
             catch (Exception ex)
             {
@@ -197,23 +184,23 @@ namespace JeffBot
         #endregion
 
         #region ProcessMessage - IBotCommand Member
-        public override void ProcessMessage(ChatMessage chatMessage)
+        public override async Task ProcessMessage(ChatMessage chatMessage)
         {
-            if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatures.Clip))
+            if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatureName.Clip.ToString() || a.Name == BotFeatureName.AdvancedClip.ToString()))
             {
                 #region Clip
-                var isClipMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword}$");
+                var isClipMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord}$");
                 if (isClipMessage.Captures.Count > 0)
                 {
-                    CreateTwitchClip(chatMessage, StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatures.AdvancedClip));
+                    await CreateTwitchClip(chatMessage, StreamerSettings.BotFeatures.Any(a => a.Name == "AdvancedClip"));
                 }
                 #endregion
             }
 
-            if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatures.AdvancedClip))
+            if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatureName.AdvancedClip.ToString()))
             {
                 #region Clip Noobhunter
-                var isPostNoobHunter = Regex.Match(chatMessage.Message.ToLower(), @$"^!{CommandKeyword} noobhunter$");
+                var isPostNoobHunter = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} noobhunter$");
                 if (isPostNoobHunter.Captures.Count > 0)
                 {
                     ValidateAndPostToNoobHuner(chatMessage);
