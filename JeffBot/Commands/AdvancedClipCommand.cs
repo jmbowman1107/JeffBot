@@ -130,7 +130,7 @@ namespace JeffBot
             try
             {
                 var chromeOptions = new ChromeOptions();
-                chromeOptions.AddArguments("headless");
+                chromeOptions.AddArguments("headless", "no-sandbox", "disable-dev-shm-usage");
                 driver = new ChromeDriver(chromeOptions);
                 driver.Navigate().GoToUrl(NoobHunterFormUrl);
                 var firstQuestion = WaitAndFindElementByXpath(driver, "//div[contains(@data-params, 'Clip Link')]");
