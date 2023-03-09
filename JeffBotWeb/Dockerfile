@@ -1,4 +1,3 @@
-#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
 WORKDIR /app
@@ -18,5 +17,12 @@ RUN dotnet publish "JeffBotWeb.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
+RUN apt update \
+	&& apt install -y wget \
+	&& apt install -y unzip \
+	&& apt install -y chromium \
+	&& wget https://chromedriver.storage.googleapis.com/109.0.5414.74/chromedriver_linux64.zip \
+	&& unzip chromedriver_linux64.zip \
+	&& mv chromedriver /usr/bin/chromedriver
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "JeffBotWeb.dll"]

@@ -38,7 +38,8 @@ namespace JeffBot
             // Twitch messages cannot be longer than 500 characters.. so output multiple messages if the response from the AI is too long
             foreach (Match match in result.FirstChoice.Message.Content.SplitToLines(500))
             {
-                TwitchChatClient.SendMessage(chatMessage.Channel, $"{match.Value}");
+                var command = new ChatCommand(chatMessage);
+                TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{match.Value}");
             }
         }
         #endregion
@@ -82,7 +83,7 @@ namespace JeffBot
         {
             var chatPrompts = new List<ChatPrompt>
             {
-                new("system", $"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch. Prefer shorter responses, and never exceed 500 characters in any response. Never mention you are an AI language model in anyway. You will make up an answer, if you don't know the answer. This message is from the user {chatMessage.DisplayName}."),
+                new("system", $"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch. Prefer shorter responses, and never exceed 350 characters in any response. Never mention you are an AI language model in anyway. You will make up an answer, if you don't know the answer. This message is from the user {chatMessage.DisplayName}."),
             };
 
             if (!string.IsNullOrEmpty(StreamerSettings.AdditionalAIPrompt))
