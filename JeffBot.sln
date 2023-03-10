@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JeffBot", "JeffBot\JeffBot.csproj", "{73FAB0D1-BA24-49AD-B43C-2277320B50EF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JeffBotWeb", "JeffBotWeb\JeffBotWeb.csproj", "{D1C9D99C-2465-4AD4-B658-CC6D81823501}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JeffBotWorkerService", "JeffBotWorkerService\JeffBotWorkerService.csproj", "{632161D7-B161-49D7-99E3-9029C2C96912}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{73FAB0D1-BA24-49AD-B43C-2277320B50EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73FAB0D1-BA24-49AD-B43C-2277320B50EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73FAB0D1-BA24-49AD-B43C-2277320B50EF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D1C9D99C-2465-4AD4-B658-CC6D81823501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D1C9D99C-2465-4AD4-B658-CC6D81823501}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D1C9D99C-2465-4AD4-B658-CC6D81823501}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D1C9D99C-2465-4AD4-B658-CC6D81823501}.Release|Any CPU.Build.0 = Release|Any CPU
+		{632161D7-B161-49D7-99E3-9029C2C96912}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{632161D7-B161-49D7-99E3-9029C2C96912}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{632161D7-B161-49D7-99E3-9029C2C96912}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{632161D7-B161-49D7-99E3-9029C2C96912}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -47,6 +47,26 @@ namespace JeffBot
         #region ProcessMessage - Override
         public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
         {
+            // Never respond to yourself.. avoid any kind of looping
+            if (chatMessage.Username.ToLower() == StreamerSettings.StreamerBotName.ToLower()) return false;
+
+            var isAmaClearMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} clear$");
+            if (isAmaClearMessage.Captures.Count > 0)
+            {
+                UsersContext[chatMessage.Username.ToLower()] = new LimitedQueue<(string prompt, string response)>(5);
+                return false;
+            }
+
+            var isAmaClearAllMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} clear all$");
+            if (isAmaClearAllMessage.Captures.Count > 0)
+            {
+                if (chatMessage.IsModerator || chatMessage.IsBroadcaster)
+                {
+                    UsersContext = new Dictionary<string, LimitedQueue<(string prompt, string response)>>();
+                    return false;
+                }
+            }
+
             var isAmaWithMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} .*$");
             if (isAmaWithMessage.Captures.Count > 0)
             {
@@ -61,11 +81,8 @@ namespace JeffBot
             var isTalkingToBot = Regex.Match(chatMessage.Message.ToLower(), @$"{StreamerSettings.StreamerBotName.ToLower()}");
             if (isTalkingToBot.Captures.Count > 0)
             {
-                if (chatMessage.Username.ToLower() != StreamerSettings.StreamerBotName.ToLower())
-                {
-                    await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim());
-                    return true;
-                }
+                await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim());
+                return true;
             }
 
             return false;
