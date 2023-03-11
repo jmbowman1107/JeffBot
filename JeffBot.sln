@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JeffBot", "JeffBot\JeffBot.csproj", "{73FAB0D1-BA24-49AD-B43C-2277320B50EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JeffBotWorkerService", "JeffBotWorkerService\JeffBotWorkerService.csproj", "{632161D7-B161-49D7-99E3-9029C2C96912}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JeffBotWorkerService", "JeffBotWorkerService\JeffBotWorkerService.csproj", "{632161D7-B161-49D7-99E3-9029C2C96912}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

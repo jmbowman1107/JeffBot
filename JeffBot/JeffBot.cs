@@ -50,7 +50,6 @@ namespace JeffBot
             InitializeChat();
             InitializeTwitchApi();
 
-            // TODO: This should be done when creating the bot for each streamer (e.g. in the Web Project). This is so eventually there can be a backend that feeds this.
             BotCommands = new List<IBotCommand>();
             foreach (var botFeature in StreamerSettings.BotFeatures)
             {
@@ -82,6 +81,32 @@ namespace JeffBot
             InitializeBotCommands();
         }
         #endregion
+        #region ShutdowmBotForStreamer
+        public void ShutdownBotForStreamer()
+        {
+            try
+            {
+                if (TwitchChatClient.IsConnected)
+                {
+                    TwitchChatClient.OnLog -= ChatClient_OnLog;
+                    TwitchChatClient.OnJoinedChannel -= ChatClient_OnJoinedChannel;
+                    TwitchChatClient.OnConnected -= ChatClient_OnConnected;
+                    TwitchChatClient.OnMessageReceived -= ChatClient_OnMessageReceived;
+                    TwitchChatClient.OnDisconnected -= ChatClient_OnDisconnected;
+                    WebsocketClient.OnStateChanged -= WebSocketClient_OnStateChanged;
+                    TwitchChatClient.Disconnect();
+                }
+
+                TwitchPubSubClient.Disconnect();
+            }
+            catch (Exception ex)
+            {
+                // TODO: How do we handle this?
+                Console.WriteLine(ex.ToString());
+            }
+        } 
+        #endregion
+
         #region InitializePubSub
         private void InitializePubSub()
         {
@@ -205,7 +230,6 @@ namespace JeffBot
         {
             // SendTopics accepts an oauth optionally, which is necessary for some topics
             //TwitchPubSubClient.SendTopics("YOUR_OAUTH_TOKEN_FOR_BEING_ABLE_TO_MARK_STREAMS");
-
         }
         #endregion
         #region PubSubClient_OnListenResponse

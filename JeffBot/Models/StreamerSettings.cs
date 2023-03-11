@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
+using Amazon.DynamoDBv2.DataModel;
 
 namespace JeffBot
 {
+    [DynamoDBTable("JeffBotStreamerSettings")]
     public class StreamerSettings
     {
+        #region StreamerId
+        [DynamoDBHashKey()]
+        public string StreamerId { get; set; }
+        #endregion
         #region StreamerName
         public string StreamerName { get; set; }
-        #endregion
-        #region StreamerId
-        public string StreamerId { get; set; }
         #endregion
         #region StreamerBotName
         public string StreamerBotName { get; set; }
@@ -31,7 +34,7 @@ namespace JeffBot
         #region AdditionalAIPrompt 
         public string AdditionalAIPrompt { get; set; }
         #endregion
-        #region BotFeatureName
+        #region BotFeatures
         public List<BotCommandSettings> BotFeatures { get; set; } 
         #endregion
     }
