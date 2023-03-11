@@ -1,11 +1,14 @@
 #if DEBUG
 using Amazon.Runtime.CredentialManagement;
 #endif
+#if RELEASE
+using Amazon;
+#endif
 using Amazon.DynamoDBv2;
-using JeffBot;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
+using JeffBot;
 using Newtonsoft.Json;
 
 namespace JeffBotWorkerService
@@ -35,12 +38,14 @@ namespace JeffBotWorkerService
                 _logger.LogCritical("Could not find AWS Credentials");
                 throw new ArgumentException("No AWS credential profile called 'jeff-personal' was found");
             }
-            using var client = new AmazonDynamoDBClient(awsCredentials);
+            using var dynamoDbClient = new AmazonDynamoDBClient(awsCredentials);
+            using var dynamoDbStreamsClient = new AmazonDynamoDBStreamsClient(awsCredentials);
             #else
-            using var client = new AmazonDynamoDBClient(new AmazonDynamoDBConfig { RegionEndpoint = RegionEndpoint.APEast1 });
+            using var dynamoDbClient = new AmazonDynamoDBClient(new AmazonDynamoDBConfig { RegionEndpoint = RegionEndpoint.USEast1 });
+            using var dynamoDbStreamsClient = new AmazonDynamoDBStreamsClient(new AmazonDynamoDBStreamsConfig{ RegionEndpoint = RegionEndpoint.USEast1 });
             #endif
 
-            using var dbContext = new DynamoDBContext(client);
+            using var dbContext = new DynamoDBContext(dynamoDbClient);
             // TODO: Segment this if we ever need to have a lot of streamers..
             var streamerSettings = dbContext.FromScanAsync<StreamerSettings>(new ScanOperationConfig());
             foreach (var streamer in await streamerSettings.GetRemainingAsync(stoppingToken))
@@ -51,7 +56,6 @@ namespace JeffBotWorkerService
 
             // For watching for changes to bot settings.
             var shardIterators = new Dictionary<string, string>();
-            var dynamoDbStreamsClient = new AmazonDynamoDBStreamsClient(awsCredentials);
             var streams = await dynamoDbStreamsClient.ListStreamsAsync(stoppingToken);
             var stream = streams.Streams.FirstOrDefault(a => a.TableName == "JeffBotStreamerSettings");
 
