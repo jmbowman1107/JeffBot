@@ -81,7 +81,6 @@ namespace JeffBotWorkerService
         {
             if (shardIterators.Count == 0)
             {
-                // TODO: Technically shards can show up whenever.. make this more dynamic.
                 var streamInfo = await dynamoDbStreamsClient.DescribeStreamAsync(stream.StreamArn, stoppingToken);
                 foreach (var shard in streamInfo.StreamDescription.Shards)
                 {
@@ -102,16 +101,20 @@ namespace JeffBotWorkerService
             foreach (var shardIterator in shardIterators)
             {
                 var updates = await dynamoDbStreamsClient.GetRecordsAsync(shardIterator.Value, stoppingToken);
+                if (string.IsNullOrWhiteSpace(updates.NextShardIterator))
+                {
+                    shardIterators.Remove(shardIterator.Key);
+                    continue;
+                }
+
                 shardIterators[shardIterator.Key] = updates.NextShardIterator;
                 foreach (var update in updates.Records)
                 {
                     var streamerThatWasUpdated = update.Dynamodb.Keys["StreamerId"].S;
-                    var newStreamerSettings =
-                        await dbContext.LoadAsync<StreamerSettings>(streamerThatWasUpdated, stoppingToken);
-
+                    var newStreamerSettings = await dbContext.LoadAsync<StreamerSettings>(streamerThatWasUpdated, stoppingToken);
                     StreamerSettings[streamerThatWasUpdated].JeffBot.ShutdownBotForStreamer();
                     StreamerSettings[streamerThatWasUpdated] = (newStreamerSettings, new JeffBot.JeffBot(newStreamerSettings));
-                    Console.WriteLine(JsonConvert.SerializeObject(newStreamerSettings));
+                    _logger.LogInformation($"Updated setting for streamer {newStreamerSettings.StreamerName}");
                 }
             }
         }
