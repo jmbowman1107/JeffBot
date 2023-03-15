@@ -17,7 +17,7 @@ namespace JeffBot
     public class JeffBot
     {
         #region BotCommands
-        public List<IBotCommand> BotCommands { get; set; } = new List<IBotCommand>();
+        public List<IBotCommand> BotCommands { get; set; } = new();
         #endregion
         #region TwitchApi
         protected TwitchAPI TwitchApi { get; set; } 
@@ -75,6 +75,9 @@ namespace JeffBot
                         break;
                     case nameof(BotFeatureName.AskMeAnything):
                         BotCommands.Add(new AskMeAnythingCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                        break;
+                    case nameof(BotFeatureName.SongManagement):
+                        BotCommands.Add(new SongManagementCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
                         break;
                 }
             }

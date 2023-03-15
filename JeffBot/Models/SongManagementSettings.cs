@@ -4,9 +4,6 @@ namespace JeffBot
 {
     public class SongManagementSettings
     {
-        #region MusicServices
-        public List<SongManagementMusicService> MusicServices { get; set; } 
-        #endregion
         #region MessageBeforeSong
         public string MessageBeforeSong { get; set; } = "The current song is: ";
         #endregion
