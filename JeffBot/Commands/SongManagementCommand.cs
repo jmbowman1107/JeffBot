@@ -26,26 +26,6 @@ namespace JeffBot
         }
         #endregion
 
-        #region GetCurrentSong
-        public async Task GetCurrentSong(ChatMessage chatMessage)
-        {
-            if (SpotifyClient == null)
-            {
-                Console.WriteLine("Spotify is not connected, cannot get current song");
-                return;
-            }
-            var currentSong = await SpotifyClient.Player.GetCurrentPlayback();
-            if (currentSong is { Item: FullTrack track })
-            {
-                TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{SongManagementSettings.MessageBeforeSong} {track.Name} by {string.Join(" and ", track.Artists.Select(a => a.Name))}");
-            }
-            else
-            {
-                TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, "Spotify is not currently playing any songs.");
-            }
-        }
-        #endregion
-
         #region ProcessMessage - Override
         public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
         {
@@ -84,7 +64,27 @@ namespace JeffBot
 
             var config = SpotifyClientConfig.CreateDefault().WithAuthenticator(authenticator);
             SpotifyClient = new SpotifyClient(config);
-        } 
+        }
+        #endregion
+
+        #region GetCurrentSong
+        private async Task GetCurrentSong(ChatMessage chatMessage)
+        {
+            if (SpotifyClient == null)
+            {
+                Console.WriteLine("Spotify is not connected, cannot get current song");
+                return;
+            }
+            var currentSong = await SpotifyClient.Player.GetCurrentPlayback();
+            if (currentSong is { Item: FullTrack track })
+            {
+                TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{SongManagementSettings.MessageBeforeSong} {track.Name} by {string.Join(" and ", track.Artists.Select(a => a.Name))}");
+            }
+            else
+            {
+                TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, "Spotify is not currently playing any songs.");
+            }
+        }
         #endregion
     }
 }

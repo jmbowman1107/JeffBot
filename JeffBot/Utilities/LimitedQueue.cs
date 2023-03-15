@@ -13,7 +13,7 @@ namespace JeffBot
         }
         #endregion
 
-        #region Enqueue
+        #region LimitedEnqueue
         public void LimitedEnqueue(T item)
         {
             if (Count == _capacity)

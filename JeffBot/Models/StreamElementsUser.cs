@@ -26,8 +26,10 @@ namespace JeffBot
         #endregion
         #region Rank
         [JsonProperty("rank")]
-        public long Rank { get; set; } 
+        public long Rank { get; set; }
         #endregion
-        public string DisplayName { get; set; }
+        #region DisplayName
+        public string DisplayName { get; set; } 
+        #endregion
     }
 }

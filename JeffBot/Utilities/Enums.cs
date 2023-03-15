@@ -1,5 +1,6 @@
 ﻿namespace JeffBot
 {
+    #region BotFeatureName
     public enum BotFeatureName
     {
         BanHate,
@@ -11,7 +12,9 @@
         AskMeAnything,
         SongManagement
     }
+    #endregion
 
+    #region FeaturePermissionLevel
     public enum FeaturePermissionLevel
     {
         Everyone,
@@ -22,14 +25,18 @@
         SuperMod,
         Broadcaster
     }
+    #endregion
 
+    #region CommandAvailability
     public enum CommandAvailability
     {
         Online,
         Offline,
         Both
     }
+    #endregion
 
+    #region MusicServiceProvider
     public enum MusicServiceProvider
     {
         Spotify,
@@ -38,5 +45,6 @@
         SoundCloud,
         AmazonMusic,
         None
-    }
+    } 
+    #endregion
 }

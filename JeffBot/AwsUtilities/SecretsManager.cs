@@ -7,11 +7,11 @@ using Amazon.SecretsManager;
 using Amazon;
 using Newtonsoft.Json;
 
-
 namespace JeffBot.AwsUtilities
 {
     public static class SecretsManager
     {
+        #region GetSecret
         public static async Task<string> GetSecret(string name)
         {
             var secretName = "JeffBotSecrets";
@@ -24,18 +24,17 @@ namespace JeffBot.AwsUtilities
                 throw new ArgumentException("No AWS credential profile called 'jeff-personal' was found");
             }
             using IAmazonSecretsManager client = new AmazonSecretsManagerClient(awsCredentials, RegionEndpoint.GetBySystemName(region));
-#else
+            #else
             using IAmazonSecretsManager client = new AmazonSecretsManagerClient(RegionEndpoint.GetBySystemName(region));
             #endif
 
-            GetSecretValueRequest request = new GetSecretValueRequest
+            var request = new GetSecretValueRequest
             {
                 SecretId = secretName,
                 VersionStage = "AWSCURRENT", // VersionStage defaults to AWSCURRENT if unspecified.
             };
 
-            GetSecretValueResponse response;
-
+            GetSecretValueResponse response = null;
             try
             {
                 response = await client.GetSecretValueAsync(request);
@@ -44,7 +43,7 @@ namespace JeffBot.AwsUtilities
             {
                 // For a list of the exceptions thrown, see
                 // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-                throw e;
+                throw;
             }
 
             var secretDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.SecretString);
@@ -52,11 +51,10 @@ namespace JeffBot.AwsUtilities
             {
                 return secretDictionary[name];
             }
-            else
-            {
-                return string.Empty;
-                // Throw error?
-            }
-        }
+
+            // Error will be caught later if empty..
+            return string.Empty;
+        } 
+        #endregion
     }
 }

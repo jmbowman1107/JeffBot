@@ -13,10 +13,6 @@ namespace JeffBot
 {
     public class HeistCommand : BotCommandBase
     {
-        #region Static Properties
-        private static DateTimeOffset? LastHeistStart { get; set; }
-        private static DateTimeOffset? LastHeistEnd { get; set; }
-        #endregion
         #region Fields
         private CancellationTokenSource _cts;
         #endregion
@@ -24,6 +20,10 @@ namespace JeffBot
         #region HeistSettings
         public HeistSettings HeistSettings { get; set; }
         #endregion
+        #region StreamElementsClient
+        public StreamElementsClient StreamElementsClient { get; set; }
+        #endregion
+
         #region PreviousHeistParticipants
         public List<HeistParticipant> PreviousHeistParticipants { get; set; } = new List<HeistParticipant>();
         #endregion
@@ -31,11 +31,15 @@ namespace JeffBot
         public List<HeistParticipant> HeistParticipants { get; set; } = new List<HeistParticipant>(); 
         #endregion
         #region HeistInProgress
-        public bool HeistInProgress { get; set; } 
+        public bool HeistInProgress { get; set; }
         #endregion
-        #region StreamElementsClient
-        public StreamElementsClient StreamElementsClient { get; set; }
+        #region LastHeistStart
+        public DateTimeOffset? LastHeistStart { get; set; }
         #endregion
+        #region LastHeistEnd
+        public DateTimeOffset? LastHeistEnd { get; set; }
+        #endregion
+
 
         #region Constructor
         public HeistCommand(BotCommandSettings botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
@@ -47,8 +51,71 @@ namespace JeffBot
         }
         #endregion
 
+        #region ProcessMessage - Override
+        public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
+        {
+            #region Heist Number
+            var isHeistMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} \d+$");
+            if (isHeistMessage.Captures.Count > 0)
+            {
+                var number = Regex.Match(chatMessage.Message, @"\d+$");
+                if (number.Captures.Count > 0)
+                {
+                    await this.JoinHeist(chatMessage.DisplayName, false, Convert.ToInt32(number.Captures[0].Value));
+                }
+            }
+            #endregion
+
+            #region Heist All
+            var isHeistAllMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} all$");
+            if (isHeistAllMessage.Captures.Count > 0)
+            {
+                await JoinHeist(chatMessage.DisplayName, true);
+            }
+            #endregion
+
+            #region Heist Cancel
+            var isHeistCancelMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} cancel$");
+            if (isHeistCancelMessage.Captures.Count > 0)
+            {
+                if (chatMessage.IsBroadcaster || chatMessage.IsModerator)
+                {
+                    await EndHeist(true);
+                }
+            }
+            #endregion
+
+            #region Heist Reset Me
+            var isHeistResetMeMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} undo$");
+            if (isHeistResetMeMessage.Captures.Count > 0)
+            {
+                await JoinHeist(chatMessage.DisplayName, false, null, true);
+            }
+            #endregion
+
+            #region Heist Rez
+            var isHeistRezMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!rez \S+$");
+            if (isHeistRezMessage.Captures.Count > 0)
+            {
+                var personToRez = chatMessage.Message.Replace("!rez ", string.Empty);
+                if (personToRez.StartsWith("@"))
+                {
+                    personToRez = personToRez.Remove(0, 1);
+                }
+                await RezUser(chatMessage.DisplayName, personToRez);
+            }
+            #endregion
+
+            return false;
+        }
+        #endregion
+        #region Initialize - Override
+        public override void Initialize()
+        { }
+        #endregion
+
         #region StartHeist
-        public void StartHeist(string startingUser)
+        private void StartHeist(string startingUser)
         {
             HeistInProgress = true;
             LastHeistStart = DateTimeOffset.Now;
@@ -63,14 +130,14 @@ namespace JeffBot
         }
         #endregion
         #region JoinHeist
-        public async Task JoinHeist(string userName, bool isAll, int? points = null, bool resetUser = false)
+        private async Task JoinHeist(string userName, bool isAll, int? points = null, bool resetUser = false)
         {
             var user = await StreamElementsClient.GetUser(userName);
             user.DisplayName = userName;
             if (!HeistInProgress && LastHeistEnd.HasValue &&
                 LastHeistEnd.Value.AddSeconds(HeistSettings.Cooldown) > DateTimeOffset.Now)
             {
-                TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), $"{HeistSettings.WaitForCooldownMessage}: {Convert.ToInt32(HeistSettings.Cooldown - (DateTimeOffset.Now-LastHeistEnd.Value).TotalSeconds)} seconds remaining.");
+                TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), $"{HeistSettings.WaitForCooldownMessage}: {Convert.ToInt32(HeistSettings.Cooldown - (DateTimeOffset.Now - LastHeistEnd.Value).TotalSeconds)} seconds remaining.");
             }
             if (LastHeistStart == null || !HeistInProgress && LastHeistEnd.HasValue && LastHeistEnd.Value.AddSeconds(HeistSettings.Cooldown) <= DateTimeOffset.Now)
             {
@@ -84,7 +151,7 @@ namespace JeffBot
         }
         #endregion
         #region EndHeist
-        public async Task EndHeist(bool cancelHeist=false)
+        private async Task EndHeist(bool cancelHeist = false)
         {
             HeistInProgress = false;
             LastHeistEnd = DateTimeOffset.Now;
@@ -145,7 +212,7 @@ namespace JeffBot
         }
         #endregion
         #region RezUser
-        public async Task RezUser(string rezzingUser, string rezzedUser)
+        private async Task RezUser(string rezzingUser, string rezzedUser)
         {
             if (HeistInProgress) TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), $"Sorry {rezzingUser}, you cannot rez someone while a heist is still in progress!");
             var rezzingUserUser = PreviousHeistParticipants.FirstOrDefault(a => a.User.Username.ToLower() == rezzingUser.ToLower());
@@ -205,7 +272,6 @@ namespace JeffBot
             }
         }
         #endregion
-
         #region JoinAndSubtractPointsForUser
         private async Task<bool> JoinAndSubtractPointsForUser(StreamElementsUser user, bool isAll, int? points = null, bool resetUser = false)
         {
@@ -293,7 +359,7 @@ namespace JeffBot
                 HeistParticipants.Add(participant);
                 return true;
             }
-        } 
+        }
         #endregion
         #region DistributePointsAndGenerateResultString
         private async Task<string> DistributePointsAndGenerateResultString()
@@ -319,69 +385,6 @@ namespace JeffBot
 
             return resultString;
         }
-        #endregion
-
-        #region ProcessMessage - IBotCommand Member
-        public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
-        {
-            #region Heist Number
-            var isHeistMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} \d+$");
-            if (isHeistMessage.Captures.Count > 0)
-            {
-                var number = Regex.Match(chatMessage.Message, @"\d+$");
-                if (number.Captures.Count > 0)
-                {
-                    await this.JoinHeist(chatMessage.DisplayName, false, Convert.ToInt32(number.Captures[0].Value));
-                }
-            }
-            #endregion
-
-            #region Heist All
-            var isHeistAllMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} all$");
-            if (isHeistAllMessage.Captures.Count > 0)
-            {
-                await JoinHeist(chatMessage.DisplayName, true);
-            }
-            #endregion
-
-            #region Heist Cancel
-            var isHeistCancelMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} cancel$");
-            if (isHeistCancelMessage.Captures.Count > 0)
-            {
-                if (chatMessage.IsBroadcaster || chatMessage.IsModerator)
-                {
-                    await EndHeist(true);
-                }
-            }
-            #endregion
-
-            #region Heist Reset Me
-            var isHeistResetMeMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} undo$");
-            if (isHeistResetMeMessage.Captures.Count > 0)
-            {
-                await JoinHeist(chatMessage.DisplayName, false, null, true);
-            }
-            #endregion
-
-            #region Heist Rez
-            var isHeistRezMessage = Regex.Match(chatMessage.Message.ToLower(), @"^!rez \S+$");
-            if (isHeistRezMessage.Captures.Count > 0)
-            {
-                var personToRez = chatMessage.Message.Replace("!rez ", string.Empty);
-                if (personToRez.StartsWith("@"))
-                {
-                    personToRez = personToRez.Remove(0, 1);
-                }
-                await RezUser(chatMessage.DisplayName, personToRez);
-            }
-            #endregion
-
-            return false;
-        }
-        #endregion
-        #region Initialize - IBotCommand Method
-        public override void Initialize()
-        { } 
         #endregion
     }
 }

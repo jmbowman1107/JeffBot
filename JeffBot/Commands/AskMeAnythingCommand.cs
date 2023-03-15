@@ -28,23 +28,6 @@ namespace JeffBot
         }
         #endregion
 
-        #region AskAnything
-        public async Task AskAnything(ChatMessage chatMessage, string whatToAsk)
-        {
-            var chatPrompts = GenerateChatPromptsForUser(chatMessage, whatToAsk);
-            var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
-
-            Console.WriteLine(result.FirstChoice.Message.Content);
-            UsersContext[chatMessage.Username].LimitedEnqueue((whatToAsk, result.FirstChoice.Message.Content));
-            // Twitch messages cannot be longer than 500 characters.. so output multiple messages if the response from the AI is too long
-            foreach (Match match in result.FirstChoice.Message.Content.SplitToLines(500))
-            {
-                var command = new ChatCommand(chatMessage);
-                TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{match.Value}");
-            }
-        }
-        #endregion
-
         #region ProcessMessage - Override
         public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
         {
@@ -96,6 +79,22 @@ namespace JeffBot
         }
         #endregion
 
+        #region AskAnything
+        private async Task AskAnything(ChatMessage chatMessage, string whatToAsk)
+        {
+            var chatPrompts = GenerateChatPromptsForUser(chatMessage, whatToAsk);
+            var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
+
+            Console.WriteLine(result.FirstChoice.Message.Content);
+            UsersContext[chatMessage.Username].LimitedEnqueue((whatToAsk, result.FirstChoice.Message.Content));
+            // Twitch messages cannot be longer than 500 characters.. so output multiple messages if the response from the AI is too long
+            foreach (Match match in result.FirstChoice.Message.Content.SplitToLines(500))
+            {
+                var command = new ChatCommand(chatMessage);
+                TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{match.Value}");
+            }
+        }
+        #endregion
         #region GenerateChatPromptsForUser
         private List<ChatPrompt> GenerateChatPromptsForUser(ChatMessage chatMessage, string whatToAsk)
         {

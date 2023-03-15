@@ -29,8 +29,42 @@ namespace JeffBot
         }
         #endregion
 
+        #region ProcessMessage - Override
+        public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
+        {
+            if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatureName.Clip.ToString() || a.Name == BotFeatureName.AdvancedClip.ToString()))
+            {
+                #region Clip
+                var isClipMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord}$");
+                if (isClipMessage.Captures.Count > 0)
+                {
+                    await CreateTwitchClip(chatMessage, StreamerSettings.BotFeatures.Any(a => a.Name == "AdvancedClip"));
+                }
+                #endregion
+            }
+
+            if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatureName.AdvancedClip.ToString()))
+            {
+                #region Clip Noobhunter
+                var isPostNoobHunter = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} noobhunter$");
+                if (isPostNoobHunter.Captures.Count > 0)
+                {
+                    ValidateAndPostToNoobHuner(chatMessage);
+                }
+                #endregion
+            }
+
+            return false;
+        }
+        #endregion
+        #region Initialize - Override
+        public override void Initialize()
+        {
+        }
+        #endregion
+
         #region CreateTwitchClip
-        public async Task CreateTwitchClip(ChatMessage chatMessage, bool canPerformAdvancedClip)
+        private async Task CreateTwitchClip(ChatMessage chatMessage, bool canPerformAdvancedClip)
         {
             CreatedClipResponse clip = null;
             try
@@ -78,7 +112,7 @@ namespace JeffBot
         }
         #endregion
         #region ValidateAndPostToNoobHuner
-        public void ValidateAndPostToNoobHuner(ChatMessage chatMessage)
+        private void ValidateAndPostToNoobHuner(ChatMessage chatMessage)
         {
             string url = string.Empty;
             KeyValuePair<string, (string url, DateTime dateTime)> recentClip = new KeyValuePair<string, (string url, DateTime dateTime)>("default user", (string.Empty, DateTime.Now));
@@ -121,7 +155,6 @@ namespace JeffBot
             }
         } 
         #endregion
-
         #region FillOutNoobHunterFormAndSubmit
         private (bool success, string message) FillOutNoobHunterFormAndSubmit(string url)
         {
@@ -179,40 +212,6 @@ namespace JeffBot
         private IWebElement WaitAndFindElementByXpath(IWebDriver driver, string xpath)
         {
             return new WebDriverWait(driver, TimeSpan.FromSeconds(15)).Until(a => a.FindElement(By.XPath(xpath)));
-        }
-        #endregion
-
-        #region ProcessMessage - IBotCommand Member
-        public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
-        {
-            if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatureName.Clip.ToString() || a.Name == BotFeatureName.AdvancedClip.ToString()))
-            {
-                #region Clip
-                var isClipMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord}$");
-                if (isClipMessage.Captures.Count > 0)
-                {
-                    await CreateTwitchClip(chatMessage, StreamerSettings.BotFeatures.Any(a => a.Name == "AdvancedClip"));
-                }
-                #endregion
-            }
-
-            if (StreamerSettings.BotFeatures.Any(a => a.Name == BotFeatureName.AdvancedClip.ToString()))
-            {
-                #region Clip Noobhunter
-                var isPostNoobHunter = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} noobhunter$");
-                if (isPostNoobHunter.Captures.Count > 0)
-                {
-                    ValidateAndPostToNoobHuner(chatMessage);
-                }
-                #endregion
-            }
-
-            return false;
-        }
-        #endregion
-        #region Initialize - IBotCommand Member
-        public override void Initialize()
-        {
         }
         #endregion
     }

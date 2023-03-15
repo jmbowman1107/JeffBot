@@ -20,8 +20,7 @@ namespace JeffBot
             get
             {
                 var httpClient = new HttpClient();
-                httpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", JwtTokenString);
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", JwtTokenString);
                 return httpClient;
             }
         } 

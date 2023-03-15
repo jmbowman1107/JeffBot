@@ -17,6 +17,40 @@ namespace JeffBot
         }
         #endregion
 
+        #region ProcessMessage - Override
+        public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
+        {
+            #region Mark
+            var isMarkMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord}$");
+            if (isMarkMessage.Captures.Count > 0)
+            {
+                await MarkStream(chatMessage);
+                return true;
+            }
+            #endregion
+
+            #region Mark Message
+            var isMarkWithMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} .*$");
+            if (isMarkWithMessage.Captures.Count > 0)
+            {
+                var markDescription = Regex.Match(chatMessage.Message.ToLower(), @" .*$");
+                if (markDescription.Captures.Count > 0)
+                {
+                    await MarkStream(chatMessage, markDescription.Captures[0].Value.Trim());
+                    return true;
+                }
+            }
+            #endregion
+
+            return false;
+        }
+        #endregion
+        #region Initialize - Override
+        public override void Initialize()
+        {
+        }
+        #endregion
+
         #region MarkStream
         private async Task MarkStream(ChatMessage chatMessage, string markMessage = "Marked from bot.")
         {
@@ -51,40 +85,6 @@ namespace JeffBot
                 }
             }
         }
-        #endregion
-
-        #region ProcessMessage - IBotCommand Member
-        public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
-        {
-            #region Mark
-            var isMarkMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord}$");
-            if (isMarkMessage.Captures.Count > 0)
-            {
-                await MarkStream(chatMessage);
-                return true;
-            }
-            #endregion
-
-            #region Mark Message
-            var isMarkWithMessage = Regex.Match(chatMessage.Message.ToLower(), @$"^!{BotCommandSettings.TriggerWord} .*$");
-            if (isMarkWithMessage.Captures.Count > 0)
-            {
-                var markDescription = Regex.Match(chatMessage.Message.ToLower(), @" .*$");
-                if (markDescription.Captures.Count > 0)
-                {
-                    await MarkStream(chatMessage, markDescription.Captures[0].Value.Trim());
-                    return true;
-                }
-            }
-            #endregion
-
-            return false;
-        }
-        #endregion
-        #region Initialize - IBotCommand Member
-        public override void Initialize()
-        {
-        } 
         #endregion
     }
 }

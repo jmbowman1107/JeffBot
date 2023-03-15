@@ -19,24 +19,6 @@ namespace JeffBot
         }
         #endregion
 
-        #region GetRecentFollowersAndBanHate
-        public async Task GetRecentFollowersAndBanHate()
-        {
-            string pagination = null;
-            var followers = await TwitchApiClient.Helix.Users.GetUsersFollowsAsync(first: 100, toId: StreamerSettings.StreamerId, after: pagination);
-            foreach (var follower in followers.Follows)
-            {
-                Console.WriteLine(follower.FromUserName);
-                if (follower.FromUserName.Contains("hoss00312"))
-                {
-                    Console.WriteLine($"Banning this MOFO {follower.FromUserName}");
-                    await TwitchApiClient.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId, new BanUserRequest{Reason = "We don't tolerate hate in this channel. Goodbye.", UserId = follower.FromUserId});
-                }
-            }
-            pagination = followers.Pagination.Cursor;
-        }
-        #endregion
-
         #region ProcessMessage - IBotCommand Member
         public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
         {
@@ -62,9 +44,26 @@ namespace JeffBot
         public override void Initialize()
         {
             TwitchPubSubClient.OnFollow += TwitchPubSubClient_OnFollow;
-        } 
+        }
         #endregion
 
+        #region GetRecentFollowersAndBanHate
+        private async Task GetRecentFollowersAndBanHate()
+        {
+            string pagination = null;
+            var followers = await TwitchApiClient.Helix.Users.GetUsersFollowsAsync(first: 100, toId: StreamerSettings.StreamerId, after: pagination);
+            foreach (var follower in followers.Follows)
+            {
+                Console.WriteLine(follower.FromUserName);
+                if (follower.FromUserName.Contains("hoss00312"))
+                {
+                    Console.WriteLine($"Banning this MOFO {follower.FromUserName}");
+                    await TwitchApiClient.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId, new BanUserRequest { Reason = "We don't tolerate hate in this channel. Goodbye.", UserId = follower.FromUserId });
+                }
+            }
+            pagination = followers.Pagination.Cursor;
+        }
+        #endregion
         #region TwitchPubSubClient_OnFollow
         private async void TwitchPubSubClient_OnFollow(object sender, TwitchLib.PubSub.Events.OnFollowArgs e)
         {

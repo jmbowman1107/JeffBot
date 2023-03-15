@@ -62,7 +62,7 @@ namespace JeffBot
             if (!IsCommandEnabled) return;
             var canExecuteCommand = await CommandIsAvailable();
             if (canExecuteCommand) canExecuteCommand = UserHasPermission(chatMessage);
-            if (canExecuteCommand) canExecuteCommand = CheckCooldowns(chatMessage, canExecuteCommand);
+            if (canExecuteCommand) canExecuteCommand = CheckCooldowns(chatMessage);
             if (canExecuteCommand) await ExecuteCommand(chatMessage);
         }
         #endregion
@@ -76,11 +76,14 @@ namespace JeffBot
         public abstract Task<bool> ProcessMessage(ChatMessage chatMessage);
         #endregion
         #region Initialize - IBotCommand Member - Abstract
+        /// <summary>
+        /// Any code required to initialize this command, such as specific API clients etc..
+        /// </summary>
         public abstract void Initialize();
         #endregion
 
         #region UserHasPermission
-        private bool UserHasPermission(ChatMessage chatMessage)
+        public virtual bool UserHasPermission(ChatMessage chatMessage)
         {
             var canExecuteCommand = false;
             switch (BotCommandSettings.PermissionLevel)
@@ -113,7 +116,7 @@ namespace JeffBot
         }
         #endregion
         #region CommandIsAvailable
-        public async Task<bool> CommandIsAvailable()
+        public virtual async Task<bool> CommandIsAvailable()
         {
             switch (BotCommandSettings.CommandAvailability)
             {
@@ -135,24 +138,24 @@ namespace JeffBot
         }
         #endregion
         #region CheckCooldowns
-        public bool CheckCooldowns(ChatMessage chatMessage, bool canExecuteCommand)
+        public virtual bool CheckCooldowns(ChatMessage chatMessage)
         {
             if (DateTimeOffset.UtcNow >= _lastExecuted.AddSeconds(BotCommandSettings.GlobalCooldown))
             {
                 if (_usersLastExecuted.ContainsKey(chatMessage.Username.ToLower()) && DateTimeOffset.UtcNow <
                     _usersLastExecuted[chatMessage.Username.ToLower()].AddSeconds(BotCommandSettings.UserCooldown))
                 {
-                    canExecuteCommand = false;
+                    return false;
                 }
             }
             else
             {
-                canExecuteCommand = false;
+                return false;
             }
-
-            return canExecuteCommand;
+            return true;
         }
         #endregion
+
         #region ExecuteCommand
         private async Task ExecuteCommand(ChatMessage chatMessage)
         {
