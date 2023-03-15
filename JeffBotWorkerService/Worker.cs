@@ -9,7 +9,6 @@ using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
 using JeffBot;
-using Newtonsoft.Json;
 
 namespace JeffBotWorkerService
 {
@@ -112,9 +111,26 @@ namespace JeffBotWorkerService
                 {
                     var streamerThatWasUpdated = update.Dynamodb.Keys["StreamerId"].S;
                     var newStreamerSettings = await dbContext.LoadAsync<StreamerSettings>(streamerThatWasUpdated, stoppingToken);
+                    // TODO: For now just hardcode this, need to do this in a better way, and probably make it a property in some way..
+                    // Perhaps look at changes between the settings, if certain settings change, need to reboot, if not, it's fine
+                    _logger.LogInformation($"Updated setting for streamer {newStreamerSettings.StreamerName}");
+
+                    //var differencesInSettings = newStreamerSettings.DetailedCompare(StreamerSettings[streamerThatWasUpdated].StreamerSettings);
+                    //foreach (var difference in differencesInSettings)
+                    //{
+                    //    switch (difference.Prop)
+                    //    {
+
+                    //    }
+                    //}
+
+                    if (StreamerSettings[streamerThatWasUpdated].StreamerSettings.SpotifyRefreshToken != newStreamerSettings.SpotifyRefreshToken)
+                    {
+                        StreamerSettings[streamerThatWasUpdated].StreamerSettings.SpotifyRefreshToken = newStreamerSettings.SpotifyRefreshToken;
+                        continue;
+                    }
                     StreamerSettings[streamerThatWasUpdated].JeffBot.ShutdownBotForStreamer();
                     StreamerSettings[streamerThatWasUpdated] = (newStreamerSettings, new JeffBot.JeffBot(newStreamerSettings));
-                    _logger.LogInformation($"Updated setting for streamer {newStreamerSettings.StreamerName}");
                 }
             }
         }
@@ -136,7 +152,7 @@ namespace JeffBotWorkerService
             }
             using var client = new AmazonDynamoDBClient(awsCredentials);
             #else
-            using var client = new AmazonDynamoDBClient(new AmazonDynamoDBConfig { RegionEndpoint = RegionEndpoint.APEast1 });
+            using var client = new AmazonDynamoDBClient(new AmazonDynamoDBConfig { RegionEndpoint = RegionEndpoint.USEast1 });
             #endif
 
             using var dbContext = new DynamoDBContext(client);

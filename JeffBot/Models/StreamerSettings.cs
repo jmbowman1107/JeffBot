@@ -25,6 +25,9 @@ namespace JeffBot
         #region StreamerBotApiOauthToken
         public string StreamerBotApiOauthToken { get; set; }
         #endregion
+        #region StreamerBotApiRefreshToken
+        public string StreamerBotApiRefreshToken { get; set; }
+        #endregion
         #region StreamElementsChannelId
         public string StreamElementsChannelId { get; set; }
         #endregion
@@ -34,8 +37,11 @@ namespace JeffBot
         #region AdditionalAIPrompt 
         public string AdditionalAIPrompt { get; set; }
         #endregion
+        #region SpotifyRefreshToken 
+        public string SpotifyRefreshToken { get; set; }
+        #endregion
         #region BotFeatures
-        public List<BotCommandSettings> BotFeatures { get; set; } 
+        public List<BotCommandSettings> BotFeatures { get; set; }
         #endregion
     }
 }

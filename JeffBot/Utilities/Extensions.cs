@@ -14,7 +14,7 @@ namespace JeffBot
         public static MatchCollection SplitToLines(this string stringToSplit, int maximumLineLength)
         {
             return Regex.Matches(stringToSplit, @"(.{1," + maximumLineLength + @"})(?:\s|$)");
-        } 
+        }
         #endregion
     }
 }

@@ -8,15 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.102.2" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.102.4" />
     <PackageReference Include="OpenAI-DotNet" Version="5.0.1" />
     <PackageReference Include="Selenium.Support" Version="4.8.0" />
     <PackageReference Include="Selenium.WebDriver" Version="4.8.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="109.0.5414.7400" />
+    <PackageReference Include="SpotifyAPI.Web" Version="7.0.0" />
     <PackageReference Include="TwitchLib" Version="3.5.3" />
     <PackageReference Include="TwitchLib.Client" Version="3.4.0-preview-d6687358268723051c755034b155a703c97c353a" />
     <PackageReference Include="TwitchLib.Client.Enums" Version="3.4.0-preview-b78278fa1c106621cfecac2c52cdbd2ddef19143" />
     <PackageReference Include="TwitchLib.Client.Models" Version="3.4.0-preview-b78278fa1c106621cfecac2c52cdbd2ddef19143" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JeffBot.AwsUtilities\JeffBot.AwsUtilities.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,7 +8,8 @@
         Clip,
         AdvancedClip,
         Mark,
-        AskMeAnything
+        AskMeAnything,
+        SongManagement
     }
 
     public enum FeaturePermissionLevel
@@ -27,5 +28,15 @@
         Online,
         Offline,
         Both
+    }
+
+    public enum MusicServiceProvider
+    {
+        Spotify,
+        YouTube,
+        AppleMusic,
+        SoundCloud,
+        AmazonMusic,
+        None
     }
 }

@@ -60,7 +60,8 @@ namespace JeffBot
         public async Task CheckExecutionPermissionsAndExecuteCommand(ChatMessage chatMessage)
         {
             if (!IsCommandEnabled) return;
-            var canExecuteCommand = UserHasPermission(chatMessage);
+            var canExecuteCommand = await CommandIsAvailable();
+            if (canExecuteCommand) canExecuteCommand = UserHasPermission(chatMessage);
             if (canExecuteCommand) canExecuteCommand = CheckCooldowns(chatMessage, canExecuteCommand);
             if (canExecuteCommand) await ExecuteCommand(chatMessage);
         }
@@ -109,6 +110,28 @@ namespace JeffBot
             }
 
             return canExecuteCommand;
+        }
+        #endregion
+        #region CommandIsAvailable
+        public async Task<bool> CommandIsAvailable()
+        {
+            switch (BotCommandSettings.CommandAvailability)
+            {
+                case CommandAvailability.Online:
+                    return await IsStreamLive();
+                case CommandAvailability.Offline:
+                case CommandAvailability.Both:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        #endregion
+        #region IsStreamLive
+        public async Task<bool> IsStreamLive()
+        {
+            var isLive = await TwitchApiClient.Helix.Streams.GetStreamsAsync(userIds: new List<string> { StreamerSettings.StreamerId });
+            return isLive.Streams.Any();
         }
         #endregion
         #region CheckCooldowns

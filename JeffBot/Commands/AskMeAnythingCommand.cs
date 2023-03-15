@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using JeffBot.AwsUtilities;
 using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Models;
@@ -89,9 +90,9 @@ namespace JeffBot
         }
         #endregion
         #region Initialize - Override
-        public override void Initialize()
+        public override async void Initialize()
         {
-            OpenAIClient = new OpenAIClient(new OpenAIAuthentication("ADD KEY HERE"));
+            OpenAIClient = new OpenAIClient(new OpenAIAuthentication(await SecretsManager.GetSecret("OPENAI_API_KEY")));
         }
         #endregion
 

@@ -35,8 +35,7 @@ namespace JeffBot
             CreatedClipResponse clip = null;
             try
             {
-                var isLive = await TwitchApiClient.Helix.Streams.GetStreamsAsync(userIds: new List<string> { StreamerSettings.StreamerId });
-                if (!isLive.Streams.Any())
+                if (!await IsStreamLive())
                 {
                     TwitchChatClient.SendMessage(chatMessage.Channel, $"Cannot create clip for an offline stream.");
                     return;

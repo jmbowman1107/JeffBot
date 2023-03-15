@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>78079356-9754-4bae-95f5-f0b84925f39f</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNet.Security.OAuth.Spotify" Version="6.0.14" />
+    <PackageReference Include="AspNet.Security.OAuth.Twitch" Version="6.0.14" />
+    <PackageReference Include="Microsoft.IdentityModel.Logging" Version="6.27.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\Authentication\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JeffBot.AwsUtilities\JeffBot.AwsUtilities.csproj" />
+  </ItemGroup>
+
+</Project>
