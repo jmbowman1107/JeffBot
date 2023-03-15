@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JeffBotWorkerService", "Jef
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JeffBotWebApi", "JeffBotWebApi\JeffBotWebApi.csproj", "{69E467EA-475D-45DE-A250-3C5412577B59}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JeffBot.AwsUtilities", "JeffBot.AwsUtilities\JeffBot.AwsUtilities.csproj", "{30C866CC-BA5E-4CBF-A640-970B57FDD1B9}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{69E467EA-475D-45DE-A250-3C5412577B59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69E467EA-475D-45DE-A250-3C5412577B59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69E467EA-475D-45DE-A250-3C5412577B59}.Release|Any CPU.Build.0 = Release|Any CPU
-		{30C866CC-BA5E-4CBF-A640-970B57FDD1B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{30C866CC-BA5E-4CBF-A640-970B57FDD1B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{30C866CC-BA5E-4CBF-A640-970B57FDD1B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{30C866CC-BA5E-4CBF-A640-970B57FDD1B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

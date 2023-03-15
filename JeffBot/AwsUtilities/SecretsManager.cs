@@ -1,4 +1,7 @@
-﻿using Amazon.Runtime.CredentialManagement;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Amazon.Runtime.CredentialManagement;
 using Amazon.SecretsManager.Model;
 using Amazon.SecretsManager;
 using Amazon;

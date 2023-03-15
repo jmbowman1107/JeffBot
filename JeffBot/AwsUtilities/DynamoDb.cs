@@ -6,13 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon;
 
-namespace JeffBot
+namespace JeffBot.AwsUtilities
 {
-    public static class DynamoDbUtilities
+    public static class DynamoDb
     {
-        public static async Task PopulateOrUpdateStreamerSettings(StreamerSettings streamerSettings, CancellationToken stoppingToken=default)
+        public static async Task PopulateOrUpdateStreamerSettings(StreamerSettings streamerSettings, CancellationToken stoppingToken = default)
         {
-            #if DEBUG
+#if DEBUG
             var chain = new CredentialProfileStoreChain();
             if (!chain.TryGetAWSCredentials("jeff-personal", out var awsCredentials))
             {
@@ -20,9 +20,9 @@ namespace JeffBot
                 throw new ArgumentException("No AWS credential profile called 'jeff-personal' was found");
             }
             using var client = new AmazonDynamoDBClient(awsCredentials);
-            #else
+#else
             using var client = new AmazonDynamoDBClient(new AmazonDynamoDBConfig { RegionEndpoint = RegionEndpoint.USEast1 });
-            #endif
+#endif
 
             using var dbContext = new DynamoDBContext(client);
             await dbContext.SaveAsync(streamerSettings, stoppingToken);

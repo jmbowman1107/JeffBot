@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using JeffBot.AwsUtilities;
 using SpotifyAPI.Web;
 using TwitchLib.Api;
 using TwitchLib.Client;
@@ -42,7 +43,6 @@ namespace JeffBot
             {
                 TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, "Spotify is not currently playing any songs.");
             }
-            
         }
         #endregion
 
@@ -67,22 +67,22 @@ namespace JeffBot
                 Console.WriteLine("Cannot initialize spotify as there is no token!");
                 return;
             }
-            var authenticator = new AuthorizationCodeAuthenticator(await AwsUtilities.SecretsManager.GetSecret("SPOTIFY_CLIENT_ID"), await AwsUtilities.SecretsManager.GetSecret("SPOTIFY_CLIENT_SECRET"),
+            var authenticator = new AuthorizationCodeAuthenticator(
+                await AwsUtilities.SecretsManager.GetSecret("SPOTIFY_CLIENT_ID"), 
+                await AwsUtilities.SecretsManager.GetSecret("SPOTIFY_CLIENT_SECRET"),
                 new AuthorizationCodeTokenResponse()
                 {
                     RefreshToken = StreamerSettings.SpotifyRefreshToken,
                     CreatedAt = DateTime.UtcNow.AddMinutes(-1)
-                });
+            });
             authenticator.TokenRefreshed += async (sender, response) =>
             {
                 Console.Write("Refreshing token.");
                 StreamerSettings.SpotifyRefreshToken = response.RefreshToken;
-                await DynamoDbUtilities.PopulateOrUpdateStreamerSettings(StreamerSettings);
-                // Set new refresh token to database..
+                await DynamoDb.PopulateOrUpdateStreamerSettings(StreamerSettings);
             };
 
-        var config = SpotifyClientConfig.CreateDefault().WithAuthenticator(authenticator);
-
+            var config = SpotifyClientConfig.CreateDefault().WithAuthenticator(authenticator);
             SpotifyClient = new SpotifyClient(config);
         } 
         #endregion

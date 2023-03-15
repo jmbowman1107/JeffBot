@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JeffBot.AwsUtilities\JeffBot.AwsUtilities.csproj" />
+    <ProjectReference Include="..\JeffBot\JeffBot.csproj" />
   </ItemGroup>
 
 </Project>
