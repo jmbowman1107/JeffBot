@@ -129,6 +129,9 @@ namespace JeffBot
             TwitchPubSubClient.OnPubSubServiceConnected += PubSubClient_OnPubSubServiceConnected;
             TwitchPubSubClient.OnListenResponse += PubSubClient_OnListenResponse;
             TwitchPubSubClient.ListenToFollows(StreamerSettings.StreamerId);
+            //TwitchPubSubClient.ListenToSubscriptions(StreamerSettings.StreamerId);
+            //TwitchPubSubClient.ListenToRaid(StreamerSettings.StreamerId);
+            TwitchPubSubClient.ListenToBitsEventsV2(StreamerSettings.StreamerId);
             TwitchPubSubClient.Connect();
         }
         #endregion
@@ -160,14 +163,11 @@ namespace JeffBot
         }
         #endregion
         #region InitializeTwitchApi
-        private void InitializeTwitchApi()
+        private async void InitializeTwitchApi()
         {
             TwitchApi = new TwitchAPI();
-
-            // throw new NotImplementedException("Enter your Twitch API Client ID and Access Token below.");
-            //_twitchApi.Settings.ClientId = "YOUR_TWITCH_API_CLIENT_ID";
-            //_twitchApi.Settings.AccessToken = "YOUR_TWITCH_API_ACCESS_TOKEN";
-            // TODO: Eventually get these tokens from the backend.
+            TwitchApi.Settings.ClientId = await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_ID");
+            TwitchApi.Settings.AccessToken = await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_SECRET");
         }
         #endregion
         #region InitializeBotCommands
@@ -244,7 +244,7 @@ namespace JeffBot
         private void PubSubClient_OnPubSubServiceConnected(object sender, EventArgs e)
         {
             // SendTopics accepts an oauth optionally, which is necessary for some topics
-            //TwitchPubSubClient.SendTopics("YOUR_OAUTH_TOKEN_FOR_BEING_ABLE_TO_MARK_STREAMS");
+            TwitchPubSubClient.SendTopics(StreamerSettings.StreamerBotChatOauthToken);
         }
         #endregion
         #region PubSubClient_OnListenResponse
