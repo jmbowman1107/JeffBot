@@ -1,5 +1,5 @@
-﻿#if DEBUG
-using System;
+﻿using System;
+#if DEBUG
 using Amazon.Runtime.CredentialManagement;
 #endif
 using System.Threading;
