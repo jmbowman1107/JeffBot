@@ -113,7 +113,7 @@ namespace JeffBot
 
             if (!string.IsNullOrEmpty(StreamerSettings.AdditionalAIPrompt))
             {
-                hahahahchatPrompts.Add(new ChatPrompt("system",  BotCommandSettings.CustomSettings.AdditionalAIPrompt));
+                chatPrompts.Add(new ChatPrompt("system",  BotCommandSettings.CustomSettings.AdditionalAIPrompt));
             }
 
             chatPrompts.AddRange(additionalPrompts.Select(prompt => new ChatPrompt("system", prompt)));
