@@ -131,7 +131,7 @@ namespace JeffBot
             TwitchPubSubClient.ListenToFollows(StreamerSettings.StreamerId);
             //TwitchPubSubClient.ListenToSubscriptions(StreamerSettings.StreamerId);
             //TwitchPubSubClient.ListenToRaid(StreamerSettings.StreamerId);
-            TwitchPubSubClient.ListenToBitsEventsV2(StreamerSettings.StreamerId);
+            //TwitchPubSubClient.ListenToBitsEventsV2(StreamerSettings.StreamerId);
             TwitchPubSubClient.Connect();
         }
         #endregion
@@ -139,7 +139,7 @@ namespace JeffBot
         private void InitializeChat()
         {
             Console.WriteLine($"Initialize {StreamerSettings.StreamerName}'s chat as {StreamerSettings.StreamerBotName}");
-            ConnectionCredentials credentials = new ConnectionCredentials(StreamerSettings.StreamerBotName, StreamerSettings.StreamerBotChatOauthToken);
+            ConnectionCredentials credentials = new ConnectionCredentials(StreamerSettings.StreamerBotName, $"oauth:{StreamerSettings.StreamerBotChatOauthToken}");
             var clientOptions = new ClientOptions
             {
                 MessagesAllowedInPeriod = 750,
@@ -167,7 +167,7 @@ namespace JeffBot
         {
             TwitchApi = new TwitchAPI();
             TwitchApi.Settings.ClientId = await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_ID");
-            TwitchApi.Settings.AccessToken = await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_SECRET");
+            TwitchApi.Settings.AccessToken = StreamerSettings.StreamerBotChatOauthToken;
         }
         #endregion
         #region InitializeBotCommands
