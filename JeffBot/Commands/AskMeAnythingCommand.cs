@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using JeffBot.AwsUtilities;
@@ -13,7 +14,7 @@ using TwitchLib.PubSub;
 
 namespace JeffBot
 {
-    public class AskMeAnythingCommand : BotCommandBase
+    public class AskMeAnythingCommand : BotCommandBase<AskMeAnythingSettings>
     {
         #region UsersContext
         public Dictionary<string, LimitedQueue<(string prompt, string response)>> UsersContext = new();
@@ -23,9 +24,8 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public AskMeAnythingCommand(BotCommandSettings botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
-        {
-        }
+        public AskMeAnythingCommand(BotCommandSettings<AskMeAnythingSettings> botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
+        {}
         #endregion
 
         #region ProcessMessage - Override
@@ -69,6 +69,13 @@ namespace JeffBot
                 return true;
             }
 
+            // React to first time message in chat
+            if (BotCommandSettings.CustomSettings.ShouldReactToFirstTimeChatters && chatMessage.IsFirstMessage)
+            {
+                await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim(), new List<string> { "This is their first ever message in chat. Stay in character, but let them know they can talk to you by using the !ama command or tagging you in a message." });
+                return true;
+            }
+
             return false;
         }
         #endregion
@@ -80,9 +87,10 @@ namespace JeffBot
         #endregion
 
         #region AskAnything
-        private async Task AskAnything(ChatMessage chatMessage, string whatToAsk)
+        private async Task AskAnything(ChatMessage chatMessage, string whatToAsk, List<string> additionalPrompts = null)
         {
-            var chatPrompts = GenerateChatPromptsForUser(chatMessage, whatToAsk);
+            additionalPrompts ??= new List<string>();
+            var chatPrompts = GenerateChatPromptsForUser(chatMessage, whatToAsk, additionalPrompts);
             var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
 
             Console.WriteLine(result.FirstChoice.Message.Content);
@@ -90,14 +98,14 @@ namespace JeffBot
             // Twitch messages cannot be longer than 500 characters.. so output multiple messages if the response from the AI is too long
             foreach (Match match in result.FirstChoice.Message.Content.SplitToLines(500))
             {
-                var command = new ChatCommand(chatMessage);
                 TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{match.Value}");
             }
         }
         #endregion
         #region GenerateChatPromptsForUser
-        private List<ChatPrompt> GenerateChatPromptsForUser(ChatMessage chatMessage, string whatToAsk)
+        private List<ChatPrompt> GenerateChatPromptsForUser(ChatMessage chatMessage, string whatToAsk, List<string> additionalPrompts = null)
         {
+            additionalPrompts ??= new List<string>();
             var chatPrompts = new List<ChatPrompt>
             {
                 new("system", $"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch. Prefer shorter responses, and never exceed 350 characters in any response. Never mention you are an AI language model in anyway. You will make up an answer, if you don't know the answer. This message is from the user {chatMessage.DisplayName}."),
@@ -105,8 +113,10 @@ namespace JeffBot
 
             if (!string.IsNullOrEmpty(StreamerSettings.AdditionalAIPrompt))
             {
-                chatPrompts.Add(new ChatPrompt("system",  StreamerSettings.AdditionalAIPrompt));
+                hahahahchatPrompts.Add(new ChatPrompt("system",  BotCommandSettings.CustomSettings.AdditionalAIPrompt));
             }
+
+            chatPrompts.AddRange(additionalPrompts.Select(prompt => new ChatPrompt("system", prompt)));
 
             if (UsersContext.ContainsKey(chatMessage.Username))
             {

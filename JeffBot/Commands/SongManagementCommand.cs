@@ -11,19 +11,15 @@ using TwitchLib.PubSub;
 
 namespace JeffBot
 {
-    public class SongManagementCommand : BotCommandBase
+    public class SongManagementCommand : BotCommandBase<SongManagementSettings>
     {
         #region SpotifyClient
         protected SpotifyClient SpotifyClient { get; set; } 
         #endregion
-        #region SongManagementSettings
-        public SongManagementSettings SongManagementSettings { get; set; } = new();
-        #endregion
 
         #region Constructor
-        public SongManagementCommand(BotCommandSettings botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
-        {
-        }
+        public SongManagementCommand(BotCommandSettings<SongManagementSettings> botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
+        {}
         #endregion
 
         #region ProcessMessage - Override
@@ -78,7 +74,7 @@ namespace JeffBot
             var currentSong = await SpotifyClient.Player.GetCurrentPlayback();
             if (currentSong is { Item: FullTrack track })
             {
-                TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{SongManagementSettings.MessageBeforeSong} {track.Name} by {string.Join(" and ", track.Artists.Select(a => a.Name))}");
+                TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{BotCommandSettings.CustomSettings.MessageBeforeSong} {track.Name} by {string.Join(" and ", track.Artists.Select(a => a.Name))}");
             }
             else
             {

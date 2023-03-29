@@ -10,7 +10,8 @@
         AdvancedClip,
         Mark,
         AskMeAnything,
-        SongManagement
+        SongManagement,
+        StreamManagement
     }
     #endregion
 

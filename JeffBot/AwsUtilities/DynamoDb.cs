@@ -9,6 +9,8 @@ using Amazon;
 #endif
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DocumentModel;
+using Newtonsoft.Json;
 
 
 namespace JeffBot.AwsUtilities
@@ -33,5 +35,43 @@ namespace JeffBot.AwsUtilities
             await dbContext.SaveAsync(streamerSettings, stoppingToken);
         } 
         #endregion
+    }
+
+    public class DataConverter : IPropertyConverter
+    {
+        public object FromEntry(DynamoDBEntry entry)
+        {
+            var primitive = entry as Primitive;
+            if (primitive is not { Value: string value } || string.IsNullOrEmpty(value))
+                throw new ArgumentOutOfRangeException();
+            var ret = JsonConvert.DeserializeObject(value);
+            return ret;
+        }
+
+        public DynamoDBEntry ToEntry(object value)
+        {
+            var jsonString = JsonConvert.SerializeObject(value);
+            DynamoDBEntry ret = new Primitive(jsonString);
+            return ret;
+        }
+    }
+
+    public class DataConverter<T> : IPropertyConverter
+    {
+        public object FromEntry(DynamoDBEntry entry)
+        {
+            var primitive = entry as Primitive;
+            if (primitive is not { Value: string value } || string.IsNullOrEmpty(value))
+                throw new ArgumentOutOfRangeException();
+            var ret = JsonConvert.DeserializeObject<T>(value);
+            return ret;
+        }
+
+        public DynamoDBEntry ToEntry(object value)
+        {
+            var jsonString = JsonConvert.SerializeObject(value);
+            DynamoDBEntry ret = new Primitive(jsonString);
+            return ret;
+        }
     }
 }

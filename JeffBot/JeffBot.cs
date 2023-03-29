@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using TwitchLib.Api;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
@@ -49,36 +51,46 @@ namespace JeffBot
             InitializePubSub();
             InitializeChat();
             InitializeTwitchApi();
-
-            BotCommands = new List<IBotCommand>();
+            
             foreach (var botFeature in StreamerSettings.BotFeatures)
             {
-                switch (botFeature.Name)
+                try
                 {
-                    case nameof(BotFeatureName.BanHate):
-                        BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
-                        break;
-                    case nameof(BotFeatureName.Heist):
-                        BotCommands.Add(new HeistCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
-                        break;
-                    case nameof(BotFeatureName.JeffRpg):
-                        BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
-                        break;
-                    case nameof(BotFeatureName.Clip):
-                        BotCommands.Add(new AdvancedClipCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
-                        break;
-                    case nameof(BotFeatureName.AdvancedClip):
-                        BotCommands.Add(new AdvancedClipCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
-                        break;
-                    case nameof(BotFeatureName.Mark):
-                        BotCommands.Add(new MarkCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
-                        break;
-                    case nameof(BotFeatureName.AskMeAnything):
-                        BotCommands.Add(new AskMeAnythingCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
-                        break;
-                    case nameof(BotFeatureName.SongManagement):
-                        BotCommands.Add(new SongManagementCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
-                        break;
+                    switch (botFeature.Name)
+                    {
+                        case nameof(BotFeatureName.BanHate):
+                            BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            break;
+                        case nameof(BotFeatureName.Heist):
+                            BotCommands.Add(new HeistCommand(new BotCommandSettings<HeistSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            break;
+                        case nameof(BotFeatureName.JeffRpg):
+                            BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            break;
+                        case nameof(BotFeatureName.Clip):
+                            BotCommands.Add(new AdvancedClipCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            break;
+                        case nameof(BotFeatureName.AdvancedClip):
+                            BotCommands.Add(new AdvancedClipCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            break;
+                        case nameof(BotFeatureName.Mark):
+                            BotCommands.Add(new MarkCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            break;
+                        case nameof(BotFeatureName.AskMeAnything):
+                            BotCommands.Add(new AskMeAnythingCommand(new BotCommandSettings<AskMeAnythingSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            break;
+                        case nameof(BotFeatureName.SongManagement):
+                            BotCommands.Add(new SongManagementCommand(new BotCommandSettings<SongManagementSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            break;
+                        default:
+                            BotCommands.Add(new GenericCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            break;
+                    }
+                }
+                catch (Exception ex) 
+                {
+                    Console.WriteLine($"Failed to setup command for streamer: {StreamerSettings.StreamerName}");
+                    Console.WriteLine(JsonConvert.SerializeObject(botFeature), ex);
                 }
             }
             InitializeBotCommands();
@@ -167,7 +179,7 @@ namespace JeffBot
         #region ChatClient_OnLog
         private void ChatClient_OnLog(object sender, OnLogArgs e)
         {
-            Console.WriteLine($"{e.DateTime.ToString()}: {e.BotUsername} - {e.Data}");
+            // Console.WriteLine($"{e.DateTime.ToString()}: {e.BotUsername} - {e.Data}");
         }
         #endregion
         #region ChatClient_OnDisconnected
@@ -191,7 +203,7 @@ namespace JeffBot
         #region ChatClient_OnMessageReceived
         private void ChatClient_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
-            BotCommands.ForEach(a => a.CheckExecutionPermissionsAndExecuteCommand(e.ChatMessage));
+            BotCommands.AsParallel().ForAll(a => a.CheckExecutionPermissionsAndExecuteCommand(e.ChatMessage));
         }
         #endregion
 

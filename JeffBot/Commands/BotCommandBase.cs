@@ -188,4 +188,19 @@ namespace JeffBot
         }
         #endregion
     }
+
+    public abstract class BotCommandBase<T> : BotCommandBase where T: new()
+    {
+        #region BotCommandSettings
+        public new BotCommandSettings<T> BotCommandSettings { get; set; } 
+        #endregion
+
+        #region Constructor
+        protected BotCommandBase(BotCommandSettings<T> botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
+        {
+            BotCommandSettings = botCommandSettings;
+            BotCommandSettings.CustomSettings ??= new T();
+        } 
+        #endregion
+    }
 }

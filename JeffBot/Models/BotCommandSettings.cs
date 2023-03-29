@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using Amazon.DynamoDBv2.DataModel;
+using JeffBot.AwsUtilities;
+using Newtonsoft.Json.Linq;
 
 namespace JeffBot
 {
-    public class BotCommandSettings
+    public class BotCommandSettings : IBotCommandSettings
     {
         #region Name
         public string Name { get; set; }
@@ -37,6 +40,10 @@ namespace JeffBot
         #region IsEnabled
         public bool IsEnabled { get; set; } = true;
         #endregion
+        #region CustomSettings
+        [DynamoDBProperty(typeof(DataConverter))]
+        public dynamic CustomSettings { get; set; }
+        #endregion
 
         #region Constructor
         public BotCommandSettings(string name, string triggerWord, FeaturePermissionLevel permissionLevel)
@@ -48,5 +55,25 @@ namespace JeffBot
         public BotCommandSettings()
         { } 
         #endregion
+    }
+
+    public class BotCommandSettings<T> : BotCommandSettings, IBotCommandSettings<T> 
+    {
+        public BotCommandSettings(BotCommandSettings botCommandSettings)
+        {
+            Name = botCommandSettings.Name;
+            Description = botCommandSettings.Description;
+            Output = botCommandSettings.Output;
+            TriggerWord = botCommandSettings.TriggerWord;
+            AdditionalTriggerWords = botCommandSettings.AdditionalTriggerWords;
+            TriggerRegexes = botCommandSettings.TriggerRegexes;
+            PermissionLevel = botCommandSettings.PermissionLevel;
+            GlobalCooldown = botCommandSettings.GlobalCooldown;
+            UserCooldown = botCommandSettings.UserCooldown;
+            CommandAvailability = botCommandSettings.CommandAvailability;
+            IsEnabled = botCommandSettings.IsEnabled;
+            CustomSettings = ((JObject)botCommandSettings.CustomSettings).ToObject<T>();
+        }
+        public new T CustomSettings { get; set; }
     }
 }
