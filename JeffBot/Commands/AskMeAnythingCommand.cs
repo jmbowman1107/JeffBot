@@ -117,7 +117,7 @@ namespace JeffBot
             {
                 TwitchPubSubClient.OnBitsReceived += async (sender, args) =>
                 {
-
+                    await AskAnything(args.ChannelName, args.Username, args.Username, $"{args.Username} just gave {args.TotalBitsUsed} to {args.ChannelName}!");
                 };
             }
 
@@ -125,7 +125,7 @@ namespace JeffBot
             {
                 TwitchPubSubClient.OnFollow += async (sender, args) =>
                 {
-
+                    await AskAnything(StreamerSettings.StreamerName, args.Username, args.DisplayName, $"{args.DisplayName} just followed the stream!");
                 };
             }
         }
