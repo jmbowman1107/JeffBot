@@ -80,8 +80,8 @@ namespace JeffBot
                 {
                     TwitchChatClient.SendMessage(chatMessage.Channel, $"Clip created successfully {clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty)}");
                     MostRecentClips[chatMessage.Username] = (clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty), DateTime.UtcNow);
-                    if (canPerformAdvancedClip) TwitchChatClient.SendMessage(chatMessage.Channel, $"@{chatMessage.DisplayName} you can submit this clip to NoobHunter for consideration by typing \"!clip noobhunter\" in chat.");
-
+                    if (canPerformAdvancedClip) 
+                        TwitchChatClient.SendMessage(chatMessage.Channel, $"@{chatMessage.DisplayName} you can submit this clip to NoobHunter for consideration by typing \"!clip noobhunter\" in chat.");
                 }
                 else
                 {
@@ -97,7 +97,8 @@ namespace JeffBot
                         TwitchChatClient.SendMessage(chatMessage.Channel, $"Stream successfully clipped: ");
                         TwitchChatClient.SendMessage(chatMessage.Channel, $"Clip created successfully {clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty)}");
                         MostRecentClips[chatMessage.Username] = (clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty), DateTime.UtcNow);
-                        if (canPerformAdvancedClip) TwitchChatClient.SendMessage(chatMessage.Channel, $"@{chatMessage.DisplayName} you can submit this clip to NoobHunter for consideration by typing \"!clip noobhunter\" in chat.");
+                        if (canPerformAdvancedClip) 
+                            TwitchChatClient.SendMessage(chatMessage.Channel, $"@{chatMessage.DisplayName} you can submit this clip to NoobHunter for consideration by typing \"!clip noobhunter\" in chat.");
                     }
                     else
                     {
