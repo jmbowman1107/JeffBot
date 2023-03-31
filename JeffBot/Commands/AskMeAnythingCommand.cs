@@ -73,7 +73,7 @@ namespace JeffBot
             // React to first time message in chat
             if (BotCommandSettings.CustomSettings.ShouldReactToFirstTimeChatters && chatMessage.IsFirstMessage)
             {
-                await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim(), new List<string> { "This is their first ever message in chat. Welcome them to the stream!" });
+                await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim(), new List<string> { "This is their first ever message in chat. Be welcoming and welcome them to the stream :)." });
                 return true;
             }
 
@@ -125,7 +125,7 @@ namespace JeffBot
             {
                 TwitchPubSubClient.OnFollow += async (sender, args) =>
                 {
-                    await AskAnything(StreamerSettings.StreamerName, args.Username, args.DisplayName, $"{args.DisplayName} just followed the stream!");
+                    await AskAnything(StreamerSettings.StreamerName, args.Username, args.DisplayName, $"{args.DisplayName} just followed the stream! Thank them.");
                 };
             }
         }
