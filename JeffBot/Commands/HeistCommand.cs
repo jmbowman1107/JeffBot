@@ -11,7 +11,7 @@ using TwitchLib.PubSub;
 
 namespace JeffBot
 {
-    public class HeistCommand : BotCommandBase<HeistSettings>
+    public class HeistCommand : BotCommandBase<HeistCommandSettings>
     {
         #region Fields
         private CancellationTokenSource _cts;
@@ -38,7 +38,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public HeistCommand(BotCommandSettings<HeistSettings> botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
+        public HeistCommand(BotCommandSettings<HeistCommandSettings> botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
         {
             StreamElementsClient = new StreamElementsClient { ChannelId = streamerSettings.StreamElementsChannelId, JwtTokenString = streamerSettings.StreamElementsJwtToken };
             BotCommandSettings.GlobalCooldown = 0;

@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-
-namespace JeffBot
+﻿namespace JeffBot
 {
-    public class SongManagementSettings
+    public class SongManagementCommandSettings
     {
         #region MessageBeforeSong
         public string MessageBeforeSong { get; set; } = "The current song is: ";

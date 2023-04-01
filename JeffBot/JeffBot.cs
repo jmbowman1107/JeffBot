@@ -62,16 +62,16 @@ namespace JeffBot
                             BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
                             break;
                         case nameof(BotFeatureName.Heist):
-                            BotCommands.Add(new HeistCommand(new BotCommandSettings<HeistSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new HeistCommand(new BotCommandSettings<HeistCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
                             break;
                         case nameof(BotFeatureName.JeffRpg):
                             BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
                             break;
                         case nameof(BotFeatureName.Clip):
-                            BotCommands.Add(new AdvancedClipCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
                             break;
                         case nameof(BotFeatureName.AdvancedClip):
-                            BotCommands.Add(new AdvancedClipCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
                             break;
                         case nameof(BotFeatureName.Mark):
                             BotCommands.Add(new MarkCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
@@ -80,7 +80,7 @@ namespace JeffBot
                             BotCommands.Add(new AskMeAnythingCommand(new BotCommandSettings<AskMeAnythingSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
                             break;
                         case nameof(BotFeatureName.SongManagement):
-                            BotCommands.Add(new SongManagementCommand(new BotCommandSettings<SongManagementSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new SongManagementCommand(new BotCommandSettings<SongManagementCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
                             break;
                         default:
                             BotCommands.Add(new GenericCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
@@ -139,7 +139,7 @@ namespace JeffBot
         private void InitializeChat()
         {
             Console.WriteLine($"Initialize {StreamerSettings.StreamerName}'s chat as {StreamerSettings.StreamerBotName}");
-            ConnectionCredentials credentials = new ConnectionCredentials(StreamerSettings.StreamerBotName, $"oauth:{StreamerSettings.StreamerBotChatOauthToken}");
+            ConnectionCredentials credentials = new ConnectionCredentials(StreamerSettings.StreamerBotName, $"oauth:{StreamerSettings.StreamerBotOauthToken}");
             var clientOptions = new ClientOptions
             {
                 MessagesAllowedInPeriod = 750,
@@ -148,6 +148,7 @@ namespace JeffBot
             WebsocketClient = new WebSocketClient(clientOptions);
             TwitchChatClient = new TwitchClient(WebsocketClient);
             TwitchChatClient.Initialize(credentials, StreamerSettings.StreamerName.ToLower());
+            TwitchChatClient.OnIncorrectLogin += TwitchChatClientOnOnIncorrectLogin;
 
             TwitchChatClient.OnLog += ChatClient_OnLog;
             TwitchChatClient.OnJoinedChannel += ChatClient_OnJoinedChannel;
@@ -167,7 +168,7 @@ namespace JeffBot
         {
             TwitchApi = new TwitchAPI();
             TwitchApi.Settings.ClientId = await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_ID");
-            TwitchApi.Settings.AccessToken = StreamerSettings.StreamerBotChatOauthToken;
+            TwitchApi.Settings.AccessToken = StreamerSettings.StreamerBotOauthToken;
         }
         #endregion
         #region InitializeBotCommands
@@ -205,6 +206,31 @@ namespace JeffBot
         {
             BotCommands.AsParallel().ForAll(a => a.CheckExecutionPermissionsAndExecuteCommand(e.ChatMessage));
         }
+        #endregion
+        #region TwitchChatClientOnOnIncorrectLogin
+        private async void TwitchChatClientOnOnIncorrectLogin(object sender, OnIncorrectLoginArgs e)
+        {
+            if (e.Exception == null) return;
+            if (e.Exception.Message.Contains("Login authentication failed"))
+            {
+                try
+                {
+                    TwitchApi = new TwitchAPI();
+                    var newTokenHopefully = await TwitchApi.Auth.RefreshAuthTokenAsync(
+                        StreamerSettings.StreamerBotRefreshToken,
+                        await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_SECRET"),
+                        await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_ID"));
+                    StreamerSettings.StreamerBotOauthToken = newTokenHopefully.AccessToken;
+                    StreamerSettings.StreamerBotRefreshToken = newTokenHopefully.RefreshToken;
+                    TwitchApi.Settings.AccessToken = StreamerSettings.StreamerBotOauthToken;
+                    await AwsUtilities.DynamoDb.PopulateOrUpdateStreamerSettings(StreamerSettings);
+                }
+                catch (Exception ex)
+                {
+                    // TODO: How to handle this? Just let it fail for now..
+                }
+            }
+        } 
         #endregion
 
         #region WebSocketClient_OnStateChanged
@@ -244,7 +270,7 @@ namespace JeffBot
         private void PubSubClient_OnPubSubServiceConnected(object sender, EventArgs e)
         {
             // SendTopics accepts an oauth optionally, which is necessary for some topics
-            TwitchPubSubClient.SendTopics(StreamerSettings.StreamerBotChatOauthToken);
+            TwitchPubSubClient.SendTopics(StreamerSettings.StreamerBotOauthToken);
         }
         #endregion
         #region PubSubClient_OnListenResponse

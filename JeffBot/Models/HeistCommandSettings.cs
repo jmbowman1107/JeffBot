@@ -1,6 +1,6 @@
 ﻿namespace JeffBot
 {
-    public class HeistSettings
+    public class HeistCommandSettings
     {
         #region MinEntries
         public int MinEntries { get; set; } = 1;

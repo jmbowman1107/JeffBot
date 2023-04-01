@@ -11,14 +11,14 @@ using TwitchLib.PubSub;
 
 namespace JeffBot
 {
-    public class SongManagementCommand : BotCommandBase<SongManagementSettings>
+    public class SongManagementCommand : BotCommandBase<SongManagementCommandSettings>
     {
         #region SpotifyClient
         protected SpotifyClient SpotifyClient { get; set; } 
         #endregion
 
         #region Constructor
-        public SongManagementCommand(BotCommandSettings<SongManagementSettings> botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
+        public SongManagementCommand(BotCommandSettings<SongManagementCommandSettings> botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
         {}
         #endregion
 

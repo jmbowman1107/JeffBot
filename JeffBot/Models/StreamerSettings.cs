@@ -13,29 +13,31 @@ namespace JeffBot
         #region StreamerName
         public string StreamerName { get; set; }
         #endregion
-        #region StreamerBotName
-        public string StreamerBotName { get; set; }
+        #region StreamerOauthToken
+        public string StreamerOauthToken { get; set; }
         #endregion
+        #region StreamerRefreshToken
+        public string StreamerRefreshToken { get; set; }
+        #endregion
+
         #region StreamerBotId
         public string StreamerBotId { get; set; }
         #endregion
-        #region StreamerBotChatOauthToken
-        public string StreamerBotChatOauthToken { get; set; }
+        #region StreamerBotName
+        public string StreamerBotName { get; set; }
         #endregion
-        #region StreamerBotApiOauthToken
-        public string StreamerBotApiOauthToken { get; set; }
+        #region StreamerBotOauthToken
+        public string StreamerBotOauthToken { get; set; }
         #endregion
-        #region StreamerBotApiRefreshToken
-        public string StreamerBotApiRefreshToken { get; set; }
+        #region StreamerBotRefreshToken
+        public string StreamerBotRefreshToken { get; set; }
         #endregion
+
         #region StreamElementsChannelId
         public string StreamElementsChannelId { get; set; }
         #endregion
         #region StreamElementsJwtToken
         public string StreamElementsJwtToken { get; set; }
-        #endregion
-        #region AdditionalAIPrompt 
-        public string AdditionalAIPrompt { get; set; }
         #endregion
         #region SpotifyRefreshToken 
         public string SpotifyRefreshToken { get; set; }

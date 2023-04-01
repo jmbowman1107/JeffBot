@@ -57,7 +57,7 @@ namespace JeffBot
         #endregion
     }
 
-    public class BotCommandSettings<T> : BotCommandSettings, IBotCommandSettings<T> 
+    public class BotCommandSettings<T> : BotCommandSettings, IBotCommandSettings<T> where T: new()
     {
         public BotCommandSettings(BotCommandSettings botCommandSettings)
         {
@@ -72,7 +72,7 @@ namespace JeffBot
             UserCooldown = botCommandSettings.UserCooldown;
             CommandAvailability = botCommandSettings.CommandAvailability;
             IsEnabled = botCommandSettings.IsEnabled;
-            CustomSettings = ((JObject)botCommandSettings.CustomSettings).ToObject<T>();
+            CustomSettings = ((JObject)botCommandSettings.CustomSettings) == null ? new T() : ((JObject)botCommandSettings.CustomSettings).ToObject<T>();
         }
         public new T CustomSettings { get; set; }
     }

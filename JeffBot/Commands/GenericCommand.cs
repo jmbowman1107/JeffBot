@@ -25,7 +25,7 @@ public class GenericCommand : BotCommandBase
         throw new NotImplementedException();
     }
     #endregion
-    #region Override
+    #region Initialize - Override
     public override void Initialize()
     {
     } 

@@ -14,7 +14,7 @@ using TwitchLib.PubSub;
 
 namespace JeffBot
 {
-    public class AdvancedClipCommand : BotCommandBase
+    public class AdvancedClipCommand : BotCommandBase<AdvancedClipCommandSettings>
     {
         #region NoobHunterFormUrl
         public string NoobHunterFormUrl { get; set; } = "http://bit.ly/NHClips";
@@ -24,7 +24,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public AdvancedClipCommand(BotCommandSettings botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
+        public AdvancedClipCommand(BotCommandSettings<AdvancedClipCommandSettings> botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
         {
         }
         #endregion

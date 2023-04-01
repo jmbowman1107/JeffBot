@@ -174,7 +174,7 @@ namespace JeffBot
                 new("system", $"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch. Prefer shorter responses, and never exceed 350 characters in any response. Never mention you are an AI language model in anyway. You will make up an answer, if you don't know the answer. This message is from the user {displayName}."),
             };
 
-            if (!string.IsNullOrEmpty(StreamerSettings.AdditionalAIPrompt))
+            if (!string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalAIPrompt))
             {
                 chatPrompts.Add(new ChatPrompt("system",  BotCommandSettings.CustomSettings.AdditionalAIPrompt));
             }
