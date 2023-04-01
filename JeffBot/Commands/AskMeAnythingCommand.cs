@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using JeffBot.AwsUtilities;
-using Newtonsoft.Json;
 using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Models;
@@ -89,8 +88,7 @@ namespace JeffBot
             {
                 TwitchChatClient.OnGiftedSubscription += async (sender, args) =>
                 {
-                    Console.Write("OnGiftedSubscription");
-                    Console.WriteLine(JsonConvert.SerializeObject(args.GiftedSubscription));
+                    // TODO: This should call AskAnything for the GiftedSubscription, except we only wanna do this single gift subs.. not community gifted.. not sure how to determine..
                 };
                 TwitchChatClient.OnCommunitySubscription += async (sender, args) =>
                 {
@@ -102,14 +100,20 @@ namespace JeffBot
             {
                 TwitchChatClient.OnNewSubscriber += async (sender, args) =>
                 {
-                    Console.Write("OnNewSub");
-                    Console.WriteLine(JsonConvert.SerializeObject(args.Subscriber));
+                    await AskAnything(args.Channel, args.Subscriber.DisplayName.ToLower(), args.Subscriber.DisplayName, args.Subscriber.SystemMessageParsed);
                 };
 
-                TwitchChatClient.OnReSubscriber += (sender, args) =>
+                TwitchChatClient.OnReSubscriber += async (sender, args) =>
                 {
-                    Console.Write("OnReSub");
-                    Console.WriteLine(JsonConvert.SerializeObject(args.ReSubscriber));
+                    await AskAnything(args.Channel, args.ReSubscriber.DisplayName.ToLower(), args.ReSubscriber.DisplayName, args.ReSubscriber.SystemMessageParsed);
+                };
+            }
+
+            if (BotCommandSettings.CustomSettings.ShouldReactToRaids)
+            {
+                TwitchChatClient.OnRaidNotification += async (sender, args) =>
+                {
+                    await AskAnything(args.Channel, args.RaidNotification.DisplayName.ToLower(), args.RaidNotification.DisplayName, args.RaidNotification.SystemMsgParsed);
                 };
             }
 
@@ -117,7 +121,7 @@ namespace JeffBot
             {
                 TwitchPubSubClient.OnBitsReceived += async (sender, args) =>
                 {
-                    await AskAnything(args.ChannelName, args.Username, args.Username, $"{args.Username} just gave {args.TotalBitsUsed} to {args.ChannelName}!");
+                    await AskAnything(args.ChannelName, args.Username,args.Username, $"{args.Username} just gave {args.TotalBitsUsed} bits to {args.ChannelName}!");
                 };
             }
 
