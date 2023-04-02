@@ -40,7 +40,6 @@ namespace JeffBot
         #region Constructor
         public HeistCommand(BotCommandSettings<HeistCommandSettings> botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
         {
-            StreamElementsClient = new StreamElementsClient { ChannelId = streamerSettings.StreamElementsChannelId, JwtTokenString = streamerSettings.StreamElementsJwtToken };
             BotCommandSettings.GlobalCooldown = 0;
             BotCommandSettings.UserCooldown = 0;
         }
@@ -106,7 +105,17 @@ namespace JeffBot
         #endregion
         #region Initialize - Override
         public override void Initialize()
-        { }
+        {
+            if (string.IsNullOrEmpty(StreamerSettings.StreamElementsChannelId) || string.IsNullOrEmpty(StreamerSettings.StreamElementsChannelId))
+            {
+                Console.WriteLine("Disabled Heist Command, since no valid StreamElements credentials are here");
+                this.BotCommandSettings.IsEnabled = false;
+            }
+            else
+            {
+                StreamElementsClient = new StreamElementsClient { ChannelId = StreamerSettings.StreamElementsChannelId, JwtTokenString = StreamerSettings.StreamElementsJwtToken };
+            }
+        }
         #endregion
 
         #region StartHeist

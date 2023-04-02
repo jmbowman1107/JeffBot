@@ -37,16 +37,15 @@ namespace JeffBotWorkerService
                 _logger.LogCritical("Could not find AWS Credentials");
                 throw new ArgumentException("No AWS credential profile called 'jeff-personal' was found");
             }
-            using var dynamoDbClient = new AmazonDynamoDBClient(awsCredentials);
             using var dynamoDbStreamsClient = new AmazonDynamoDBStreamsClient(awsCredentials);
             #else
-            using var dynamoDbClient = new AmazonDynamoDBClient(new AmazonDynamoDBConfig { RegionEndpoint = RegionEndpoint.USEast1 });
             using var dynamoDbStreamsClient = new AmazonDynamoDBStreamsClient(new AmazonDynamoDBStreamsConfig{ RegionEndpoint = RegionEndpoint.USEast1 });
             #endif
 
-            using var dbContext = new DynamoDBContext(dynamoDbClient);
+            var globalSettings = await JeffBot.AwsUtilities.DynamoDb.GetGlobalSettings(stoppingToken);
+            JeffBot.GlobalSettingsSingleton.Initialize(globalSettings);
             // TODO: Segment this if we ever need to have a lot of streamers..
-            var streamerSettings = dbContext.FromScanAsync<StreamerSettings>(new ScanOperationConfig());
+            var streamerSettings = JeffBot.AwsUtilities.DynamoDb.DbContext.FromScanAsync<StreamerSettings>(new ScanOperationConfig());
             foreach (var streamer in await streamerSettings.GetRemainingAsync(stoppingToken))
             {
                 _logger.LogInformation($"Starting bot {streamer.StreamerBotName} for streamer {streamer.StreamerName}");
@@ -68,7 +67,7 @@ namespace JeffBotWorkerService
                 else
                 {
                     await LoadDynamoDbStreamShards(stoppingToken, shardIterators, dynamoDbStreamsClient, stream);
-                    await CheckForUpdatesAndUpdateStreamers(stoppingToken, shardIterators, dynamoDbStreamsClient, dbContext);
+                    await CheckForUpdatesAndUpdateStreamers(stoppingToken, shardIterators, dynamoDbStreamsClient, JeffBot.AwsUtilities.DynamoDb.DbContext);
                 }
                 await Task.Delay(1000, stoppingToken);
             }
@@ -132,34 +131,6 @@ namespace JeffBotWorkerService
                     StreamerSettings[streamerThatWasUpdated].JeffBot.ShutdownBotForStreamer();
                     StreamerSettings[streamerThatWasUpdated] = (newStreamerSettings, new JeffBot.JeffBot(newStreamerSettings));
                 }
-            }
-        }
-        #endregion
-
-        #region PopulateOrUpdateStreamerSettings
-        /// <summary>
-        /// Will update DynamoDB with settings set from in the code, just placing this code here for now, it probably will got elsewhere at somepoint
-        /// </summary>
-        /// <returns></returns>
-        private async Task PopulateOrUpdateStreamerSettings(CancellationToken stoppingToken)
-        {
-            #if DEBUG
-            var chain = new CredentialProfileStoreChain();
-            if (!chain.TryGetAWSCredentials("jeff-personal", out var awsCredentials))
-            {
-                _logger.LogCritical("Could not find AWS Credentials");
-                throw new ArgumentException("No AWS credential profile called 'jeff-personal' was found");
-            }
-            using var client = new AmazonDynamoDBClient(awsCredentials);
-            #else
-            using var client = new AmazonDynamoDBClient(new AmazonDynamoDBConfig { RegionEndpoint = RegionEndpoint.USEast1 });
-            #endif
-
-            using var dbContext = new DynamoDBContext(client);
-
-            foreach (var streamer in StreamerSettings)
-            {
-                await dbContext.SaveAsync(streamer.Value.StreamerSettings, stoppingToken);
             }
         }
         #endregion

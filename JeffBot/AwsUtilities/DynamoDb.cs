@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 #if DEBUG
 using Amazon.Runtime.CredentialManagement;
 #endif
@@ -17,23 +18,49 @@ namespace JeffBot.AwsUtilities
 {
     public static class DynamoDb
     {
+        #region DbContext
+        private static DynamoDBContext _dbContext;
+        public static DynamoDBContext DbContext
+        {
+            get
+            {
+                if (_dbContext != null) return _dbContext;
+                #if DEBUG
+                var chain = new CredentialProfileStoreChain();
+                if (!chain.TryGetAWSCredentials("jeff-personal", out var awsCredentials))
+                {
+                    throw new ArgumentException("No AWS credential profile called 'jeff-personal' was found");
+                }
+                var client = new AmazonDynamoDBClient(awsCredentials);
+                #else
+                var client = new AmazonDynamoDBClient(new AmazonDynamoDBConfig { RegionEndpoint = RegionEndpoint.USEast1 });
+                #endif
+
+                var dbContext = new DynamoDBContext(client);
+                _dbContext = dbContext;
+                return _dbContext;
+            }
+        } 
+        #endregion
+
         #region PopulateOrUpdateStreamerSettings
         public static async Task PopulateOrUpdateStreamerSettings(StreamerSettings streamerSettings, CancellationToken stoppingToken = default)
         {
-            #if DEBUG
-            var chain = new CredentialProfileStoreChain();
-            if (!chain.TryGetAWSCredentials("jeff-personal", out var awsCredentials))
-            {
-                throw new ArgumentException("No AWS credential profile called 'jeff-personal' was found");
-            }
-            using var client = new AmazonDynamoDBClient(awsCredentials);
-            #else
-            using var client = new AmazonDynamoDBClient(new AmazonDynamoDBConfig { RegionEndpoint = RegionEndpoint.USEast1 });
-            #endif
-
-            using var dbContext = new DynamoDBContext(client);
-            await dbContext.SaveAsync(streamerSettings, stoppingToken);
-        } 
+            await DbContext.SaveAsync(streamerSettings, stoppingToken);
+        }
+        #endregion
+        #region GetGlobalSettings
+        public static async Task<GlobalSettings> GetGlobalSettings(CancellationToken stoppingToken = default)
+        {
+            var globalSettings = await DbContext.FromScanAsync<GlobalSettings>(new ScanOperationConfig()).GetRemainingAsync(stoppingToken);
+            return globalSettings != null ? globalSettings.FirstOrDefault() : new GlobalSettings();
+        }
+        #endregion
+        #region UpdateGlobalSettings
+        public static async Task UpdateGlobalSettings(GlobalSettings globalSettings, CancellationToken stoppingToken = default)
+        {
+            await DbContext.SaveAsync(globalSettings, stoppingToken);
+        }
         #endregion
     }
 
