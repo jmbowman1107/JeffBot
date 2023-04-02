@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TwitchLib.Api;
 using TwitchLib.Client;
-using TwitchLib.Client.Exceptions;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
 
