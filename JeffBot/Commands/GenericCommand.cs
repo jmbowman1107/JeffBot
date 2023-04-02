@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TwitchLib.Api;
 using TwitchLib.Client;
+using TwitchLib.Client.Exceptions;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
 
@@ -16,18 +18,40 @@ public class GenericCommand : BotCommandBase
     #endregion
 
     #region ProcessMessage - Override
-    public override Task<bool> ProcessMessage(ChatMessage chatMessage)
+    public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
     {
-        // TODO: Check if trigger word
-        // TODO: Check if any of the additional trigger words
-        // TODO: Check if matches any regex
-        // TODO: Execute what it should return
-        throw new NotImplementedException();
+        // TODO: We will need to take into account variables when generating output (e.g. users, counters, whatever else we want to be a dynamic feature)
+        if (chatMessage.Message.StartsWith($"!{BotCommandSettings.TriggerWord}", StringComparison.InvariantCultureIgnoreCase))
+        {
+            TwitchChatClient.SendMessage(chatMessage.Channel, BotCommandSettings.Output);
+            return true;
+        }
+
+        foreach (var additionalTriggerWord in BotCommandSettings.AdditionalTriggerWords)
+        {
+            if (chatMessage.Message.StartsWith($"!{additionalTriggerWord}", StringComparison.InvariantCultureIgnoreCase))
+            {
+                TwitchChatClient.SendMessage(chatMessage.Channel, BotCommandSettings.Output);
+                return true;
+            }
+        }
+
+        foreach (var regex in BotCommandSettings.TriggerRegexes)
+        {
+            if (Regex.IsMatch(chatMessage.Message, regex, RegexOptions.IgnoreCase))
+            {
+                TwitchChatClient.SendMessage(chatMessage.Channel, BotCommandSettings.Output);
+                return true;
+            }
+        }
+
+        // If no trigger words or regex matches are found, return false
+        return false;
     }
     #endregion
     #region Initialize - Override
     public override void Initialize()
     {
-    } 
+    }
     #endregion
 }
