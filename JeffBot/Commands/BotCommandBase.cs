@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Amazon.Runtime.Internal.Util;
 using Microsoft.Extensions.Logging;
 using TwitchLib.Client;
 using TwitchLib.Client.Exceptions;
@@ -10,7 +9,6 @@ using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
 using TwitchLib.PubSub.Interfaces;
-using ILogger = Amazon.Runtime.Internal.Util.ILogger;
 
 namespace JeffBot
 {
