@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Streams.CreateStreamMarker;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
@@ -12,7 +11,7 @@ namespace JeffBot
     public class MarkCommand : BotCommandBase
     {
         #region Constructor
-        public MarkCommand(BotCommandSettings botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
+        public MarkCommand(BotCommandSettings botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
         {
         }
         #endregion
@@ -56,7 +55,7 @@ namespace JeffBot
         {
             try
             {
-                var mark = await TwitchApiClient.Helix.Streams.CreateStreamMarkerAsync(new CreateStreamMarkerRequest { Description = markMessage, UserId = StreamerSettings.StreamerId });
+                var mark = await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Streams.CreateStreamMarkerAsync(new CreateStreamMarkerRequest { Description = markMessage, UserId = StreamerSettings.StreamerId }));
                 if (markMessage != "Marked from bot.")
                 {
                     TwitchChatClient.SendMessage(chatMessage.Channel, $"Stream successfully marked with description: \"{markMessage}\"");

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TwitchLib.Api;
-using TwitchLib.Api.Interfaces;
 using TwitchLib.Client;
 using TwitchLib.Client.Exceptions;
 using TwitchLib.Client.Interfaces;
@@ -31,7 +29,7 @@ namespace JeffBot
         }
         #endregion
         #region TwitchApiClient - IBotCommand Member
-        public ITwitchAPI TwitchApiClient { get; set; }
+        public ManagedTwitchApi TwitchApiClient { get; set; }
         #endregion
         #region TwitchChatClient - IBotCommand Member
         public ITwitchClient TwitchChatClient { get; set; }
@@ -44,7 +42,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        protected BotCommandBase(BotCommandSettings botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings)
+        protected BotCommandBase(BotCommandSettings botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings)
         {
             BotCommandSettings = botCommandSettings;
             TwitchApiClient = twitchApiClient;
@@ -133,7 +131,7 @@ namespace JeffBot
         #region IsStreamLive
         public async Task<bool> IsStreamLive()
         {
-            var isLive = await TwitchApiClient.Helix.Streams.GetStreamsAsync(userIds: new List<string> { StreamerSettings.StreamerId });
+            var isLive = await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Streams.GetStreamsAsync(userIds: new List<string> { StreamerSettings.StreamerId }));
             return isLive.Streams.Any();
         }
         #endregion
@@ -196,7 +194,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        protected BotCommandBase(BotCommandSettings<T> botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
+        protected BotCommandBase(BotCommandSettings<T> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
         {
             BotCommandSettings = botCommandSettings;
             BotCommandSettings.CustomSettings ??= new T();

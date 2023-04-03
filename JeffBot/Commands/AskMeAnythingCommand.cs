@@ -7,7 +7,6 @@ using JeffBot.AwsUtilities;
 using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Models;
-using TwitchLib.Api;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
@@ -24,7 +23,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public AskMeAnythingCommand(BotCommandSettings<AskMeAnythingSettings> botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
+        public AskMeAnythingCommand(BotCommandSettings<AskMeAnythingSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
         {}
         #endregion
 

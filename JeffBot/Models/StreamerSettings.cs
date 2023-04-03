@@ -6,6 +6,22 @@ namespace JeffBot
     [DynamoDBTable("JeffBotStreamerSettings")]
     public class StreamerSettings
     {
+        #region UseDefaultBot
+        [DynamoDBIgnore]
+        public bool UseDefaultBot
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(this.StreamerBotId) || string.IsNullOrEmpty(this.StreamerBotOauthToken))
+                {
+                    StreamerBotName = GlobalSettingsSingleton.Instance.DefaultBotName;
+                    return true;
+                }
+                return false;
+            }
+        }
+        #endregion
+
         #region StreamerId
         [DynamoDBHashKey()]
         public string StreamerId { get; set; }
@@ -44,6 +60,13 @@ namespace JeffBot
         #endregion
         #region BotFeatures
         public List<BotCommandSettings> BotFeatures { get; set; }
+        #endregion
+
+        #region Constructor
+        public StreamerSettings()
+        {
+            var init = UseDefaultBot;
+        } 
         #endregion
     }
 }

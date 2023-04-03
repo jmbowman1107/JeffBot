@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using TwitchLib.Api;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
@@ -18,24 +17,11 @@ namespace JeffBot
 {
     public class JeffBot
     {
-        private bool UseDefaultBot
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(StreamerSettings.StreamerBotId) || string.IsNullOrEmpty(StreamerSettings.StreamerBotOauthToken))
-                {
-                    StreamerSettings.StreamerBotName = GlobalSettingsSingleton.Instance.DefaultBotName;
-                    return true;
-                }
-                return false;
-            }
-        }
-
         #region BotCommands
         public List<IBotCommand> BotCommands { get; set; } = new();
         #endregion
-        #region TwitchApi
-        protected TwitchAPI TwitchApi { get; set; } 
+        #region ManagedTwitchApi
+        protected ManagedTwitchApi TwitchApi { get; set; } 
         #endregion
         #region TwitchChatClient
         protected TwitchClient TwitchChatClient { get; set; } 
@@ -54,7 +40,6 @@ namespace JeffBot
         public JeffBot(StreamerSettings streamerSettings)
         {
             StreamerSettings = streamerSettings;
-            var useDefaultBot = UseDefaultBot;
             InitializeBotForStreamer();
         }
         #endregion
@@ -62,10 +47,10 @@ namespace JeffBot
         #region InitializeBotForStreamer
         private void InitializeBotForStreamer()
         {
-            InitializePubSub();
-            InitializeChat();
             InitializeTwitchApi();
-            
+            InitializeChat();
+            InitializePubSub();
+
             foreach (var botFeature in StreamerSettings.BotFeatures)
             {
                 try
@@ -153,7 +138,7 @@ namespace JeffBot
         private void InitializeChat()
         {
             Console.WriteLine($"Initialize {StreamerSettings.StreamerName}'s chat as {StreamerSettings.StreamerBotName}");
-            ConnectionCredentials credentials = new ConnectionCredentials((StreamerSettings.StreamerBotName), $"oauth:{(!UseDefaultBot ? StreamerSettings.StreamerBotOauthToken : GlobalSettingsSingleton.Instance.DefaultBotOauthToken)}");
+            ConnectionCredentials credentials = new ConnectionCredentials((StreamerSettings.StreamerBotName), $"oauth:{(!StreamerSettings.UseDefaultBot ? StreamerSettings.StreamerBotOauthToken : GlobalSettingsSingleton.Instance.DefaultBotOauthToken)}");
             var clientOptions = new ClientOptions
             {
                 MessagesAllowedInPeriod = 750,
@@ -180,9 +165,7 @@ namespace JeffBot
         #region InitializeTwitchApi
         private async void InitializeTwitchApi()
         {
-            TwitchApi = new TwitchAPI();
-            TwitchApi.Settings.ClientId = await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_ID");
-            TwitchApi.Settings.AccessToken = !UseDefaultBot ? StreamerSettings.StreamerBotOauthToken : GlobalSettingsSingleton.Instance.DefaultBotOauthToken;
+            TwitchApi = new ManagedTwitchApi(await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_ID"), await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_SECRET"), StreamerSettings);
         }
         #endregion
         #region InitializeBotCommands
@@ -225,30 +208,12 @@ namespace JeffBot
         private async void ChatClient_OnIncorrectLogin(object sender, OnIncorrectLoginArgs e)
         {
             if (e.Exception == null) return;
+            Console.WriteLine($"Incorrect chat login for streamer {StreamerSettings.StreamerName} with error message {e.Exception.Message}");
             if (e.Exception.Message.Contains("Login authentication failed"))
             {
                 try
                 {
-
-                    TwitchApi = new TwitchAPI();
-                    var newTokenHopefully = await TwitchApi.Auth.RefreshAuthTokenAsync(!UseDefaultBot ? StreamerSettings.StreamerBotRefreshToken : GlobalSettingsSingleton.Instance.DefaultBotRefreshToken,
-                        await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_SECRET"),
-                        await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_ID"));
-
-                    if (UseDefaultBot)
-                    {
-                        GlobalSettingsSingleton.Instance.DefaultBotOauthToken = newTokenHopefully.AccessToken;
-                        GlobalSettingsSingleton.Instance.DefaultBotRefreshToken = newTokenHopefully.RefreshToken;
-                        await AwsUtilities.DynamoDb.UpdateGlobalSettings(GlobalSettingsSingleton.Instance);
-                    }
-                    else
-                    {
-                        StreamerSettings.StreamerBotOauthToken = newTokenHopefully.AccessToken;
-                        StreamerSettings.StreamerBotRefreshToken = newTokenHopefully.RefreshToken;
-                        await AwsUtilities.DynamoDb.PopulateOrUpdateStreamerSettings(StreamerSettings);
-                    }
-
-                    TwitchApi.Settings.AccessToken = !UseDefaultBot ? StreamerSettings.StreamerBotOauthToken : GlobalSettingsSingleton.Instance.DefaultBotOauthToken;
+                    await TwitchApi.RefreshAccessTokenAsync();
                 }
                 catch (Exception ex)
                 {

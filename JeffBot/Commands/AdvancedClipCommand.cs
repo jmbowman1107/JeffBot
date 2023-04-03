@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Clips.CreateClip;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
@@ -24,7 +23,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public AdvancedClipCommand(BotCommandSettings<AdvancedClipCommandSettings> botCommandSettings, TwitchAPI twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
+        public AdvancedClipCommand(BotCommandSettings<AdvancedClipCommandSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
         {
         }
         #endregion
@@ -74,7 +73,7 @@ namespace JeffBot
                     TwitchChatClient.SendMessage(chatMessage.Channel, $"Cannot create clip for an offline stream.");
                     return;
                 }
-                clip = await TwitchApiClient.Helix.Clips.CreateClipAsync(StreamerSettings.StreamerId);
+                clip = await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Clips.CreateClipAsync(StreamerSettings.StreamerId));
 
                 if (clip != null && clip.CreatedClips.Any())
                 {
