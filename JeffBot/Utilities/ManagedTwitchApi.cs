@@ -29,8 +29,8 @@ namespace JeffBot
             TwitchApi.Settings.ClientId = clientId;
             TwitchApi.Settings.Secret = clientSecret;
             StreamerSettings = streamerSettings;
-            TwitchApi.Settings.AccessToken = StreamerSettings.StreamerBotOauthToken;
-            _refreshToken = StreamerSettings.StreamerBotRefreshToken;
+            TwitchApi.Settings.AccessToken = !StreamerSettings.UseDefaultBot ? StreamerSettings.StreamerBotOauthToken : GlobalSettingsSingleton.Instance.DefaultBotOauthToken;
+            _refreshToken = !StreamerSettings.UseDefaultBot ? StreamerSettings.StreamerBotRefreshToken : GlobalSettingsSingleton.Instance.DefaultBotRefreshToken; ;
             _accessTokenExpiration = DateTime.Now.AddMinutes(235); // Tokens are typically good for 4 hours..
         } 
         #endregion
@@ -56,6 +56,11 @@ namespace JeffBot
             {
                 await RefreshAccessTokenAsync();
                 return await apiCall(TwitchApi);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
             }
         }
         #endregion
