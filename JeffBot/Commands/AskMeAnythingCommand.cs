@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using JeffBot.AwsUtilities;
+using Microsoft.Extensions.Logging;
 using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Models;
@@ -23,7 +24,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public AskMeAnythingCommand(BotCommandSettings<AskMeAnythingSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
+        public AskMeAnythingCommand(BotCommandSettings<AskMeAnythingSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings, logger)
         { }
         #endregion
 
@@ -141,7 +142,7 @@ namespace JeffBot
             var chatPrompts = GenerateChatPromptsForUser(chatMessage.Username, chatMessage.DisplayName, whatToAsk, additionalPrompts);
             var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
 
-            Console.WriteLine(result.FirstChoice.Message.Content);
+            Logger.LogInformation(result.FirstChoice.Message.Content);
             UsersContext[chatMessage.Username].LimitedEnqueue((whatToAsk, result.FirstChoice.Message.Content));
             // Twitch messages cannot be longer than 500 characters.. so output multiple messages if the response from the AI is too long
             foreach (Match match in result.FirstChoice.Message.Content.SplitToLines(500))
@@ -155,7 +156,7 @@ namespace JeffBot
             var chatPrompts = GenerateChatPromptsForUser(username, displayName, whatToAsk, additionalPrompts);
             var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
 
-            Console.WriteLine(result.FirstChoice.Message.Content);
+            Logger.LogInformation(result.FirstChoice.Message.Content);
             UsersContext[username].LimitedEnqueue((whatToAsk, result.FirstChoice.Message.Content));
             // Twitch messages cannot be longer than 500 characters.. so output multiple messages if the response from the AI is too long
             foreach (Match match in result.FirstChoice.Message.Content.SplitToLines(500))

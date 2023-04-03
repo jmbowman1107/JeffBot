@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Amazon.Runtime.Internal.Util;
+using Microsoft.Extensions.Logging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
@@ -23,7 +25,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public AdvancedClipCommand(BotCommandSettings<AdvancedClipCommandSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
+        public AdvancedClipCommand(BotCommandSettings<AdvancedClipCommandSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings, logger)
         {
         }
         #endregion
@@ -181,13 +183,13 @@ namespace JeffBot
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.ToString());
+                    Logger.LogError(ex.ToString());
                     return (false, ex.Message);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Logger.LogError(ex.ToString());
                 return (false, ex.Message);
             }
             finally
@@ -196,12 +198,12 @@ namespace JeffBot
                 {
                     try
                     {
-                        Console.WriteLine("Closing Chrome Driver");
+                        Logger.LogInformation("Closing Chrome Driver");
                         driver.Close();
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(ex);
+                        Logger.LogError(ex.ToString());
                         // Swallow
                     }
                 }

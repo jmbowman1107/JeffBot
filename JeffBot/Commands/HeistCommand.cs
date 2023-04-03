@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
@@ -37,7 +38,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public HeistCommand(BotCommandSettings<HeistCommandSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
+        public HeistCommand(BotCommandSettings<HeistCommandSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings, logger)
         {
             BotCommandSettings.GlobalCooldown = 0;
             BotCommandSettings.UserCooldown = 0;
@@ -107,7 +108,7 @@ namespace JeffBot
         {
             if (string.IsNullOrEmpty(StreamerSettings.StreamElementsChannelId) || string.IsNullOrEmpty(StreamerSettings.StreamElementsChannelId))
             {
-                Console.WriteLine("Disabled Heist Command, since no valid StreamElements credentials are here");
+                Logger.LogInformation("Disabled Heist Command, since no valid StreamElements credentials are here");
                 this.BotCommandSettings.IsEnabled = false;
             }
             else

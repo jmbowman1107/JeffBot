@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Amazon.Runtime.Internal.Util;
+using Microsoft.Extensions.Logging;
 using TwitchLib.Client;
 using TwitchLib.Client.Exceptions;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
 using TwitchLib.PubSub;
 using TwitchLib.PubSub.Interfaces;
+using ILogger = Amazon.Runtime.Internal.Util.ILogger;
 
 namespace JeffBot
 {
@@ -15,6 +18,10 @@ namespace JeffBot
     {
         private DateTimeOffset _lastExecuted;
         private readonly Dictionary<string, DateTimeOffset> _usersLastExecuted;
+
+        #region Logger
+        public ILogger<JeffBot> Logger { get; set; }
+        #endregion
 
         #region BotCommandSettings - IBotCommand Member
         public BotCommandSettings BotCommandSettings { get; set; }
@@ -42,13 +49,14 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        protected BotCommandBase(BotCommandSettings botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings)
+        protected BotCommandBase(BotCommandSettings botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings, ILogger<JeffBot> logger)
         {
             BotCommandSettings = botCommandSettings;
             TwitchApiClient = twitchApiClient;
             TwitchChatClient = twitchChatClient;
             TwitchPubSubClient = twitchPubSubClient;
             StreamerSettings = streamerSettings;
+            Logger = logger;
             _lastExecuted = DateTimeOffset.MinValue;
             _usersLastExecuted = new Dictionary<string, DateTimeOffset>();
         }
@@ -181,7 +189,7 @@ namespace JeffBot
             catch (Exception ex)
             {
                 // In case we bubble up an exception..
-                Console.WriteLine(ex.ToString());
+                Logger.LogError(ex.ToString());
             }
         }
         #endregion
@@ -194,7 +202,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        protected BotCommandBase(BotCommandSettings<T> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
+        protected BotCommandBase(BotCommandSettings<T> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings, logger)
         {
             BotCommandSettings = botCommandSettings;
             BotCommandSettings.CustomSettings ??= new T();

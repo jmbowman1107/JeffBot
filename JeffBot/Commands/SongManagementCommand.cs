@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using JeffBot.AwsUtilities;
+using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
@@ -17,7 +18,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public SongManagementCommand(BotCommandSettings<SongManagementCommandSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
+        public SongManagementCommand(BotCommandSettings<SongManagementCommandSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings, logger)
         { }
         #endregion
 
@@ -39,7 +40,7 @@ namespace JeffBot
         {
             if (string.IsNullOrEmpty(StreamerSettings.SpotifyRefreshToken))
             {
-                Console.WriteLine("Cannot initialize spotify as there is no token!");
+                Logger.LogInformation("Cannot initialize Spotify as there is no token!");
                 return;
             }
             var authenticator = new AuthorizationCodeAuthenticator(
@@ -67,7 +68,7 @@ namespace JeffBot
         {
             if (SpotifyClient == null)
             {
-                Console.WriteLine("Spotify is not connected, cannot get current song");
+                Logger.LogInformation("Spotify is not connected, cannot get current song");
                 return;
             }
             var currentSong = await SpotifyClient.Player.GetCurrentPlayback();

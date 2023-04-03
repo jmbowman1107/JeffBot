@@ -38,7 +38,6 @@ namespace JeffBot
         #region RefreshAccessTokenAsync
         public async Task<RefreshResponse> RefreshAccessTokenAsync()
         {
-            Console.WriteLine($"Access token for bot {StreamerSettings.StreamerBotName} is being refreshed.");
             var newToken = await TwitchApi.Auth.RefreshAuthTokenAsync(_refreshToken, _clientSecret, _clientId);
             await UpdateTokenDetails(newToken);
             return newToken;
@@ -56,11 +55,6 @@ namespace JeffBot
             {
                 await RefreshAccessTokenAsync();
                 return await apiCall(TwitchApi);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                throw;
             }
         }
         #endregion

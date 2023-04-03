@@ -15,15 +15,17 @@ namespace JeffBotWorkerService
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
+        private readonly ILoggerFactory _loggerFactory;
 
         #region StreamerSettings
         public Dictionary<string, (StreamerSettings StreamerSettings, JeffBot.JeffBot JeffBot)> StreamerSettings = new();
         #endregion
 
         #region Constructor
-        public Worker(ILogger<Worker> logger)
+        public Worker(ILogger<Worker> logger, ILoggerFactory loggerFactory)
         {
             _logger = logger;
+            _loggerFactory = loggerFactory;
         }
         #endregion
 
@@ -49,7 +51,8 @@ namespace JeffBotWorkerService
             foreach (var streamer in await streamerSettings.GetRemainingAsync(stoppingToken))
             {
                 _logger.LogInformation($"Starting bot {streamer.StreamerBotName} for streamer {streamer.StreamerName}");
-                StreamerSettings[streamer.StreamerId] = (streamer, new JeffBot.JeffBot(streamer));
+                var jeffBotLogger = _loggerFactory.CreateLogger<JeffBot.JeffBot>();
+                StreamerSettings[streamer.StreamerId] = (streamer, new JeffBot.JeffBot(streamer, jeffBotLogger));
             }
 
             // For watching for changes to bot settings.
@@ -129,7 +132,8 @@ namespace JeffBotWorkerService
                         continue;
                     }
                     StreamerSettings[streamerThatWasUpdated].JeffBot.ShutdownBotForStreamer();
-                    StreamerSettings[streamerThatWasUpdated] = (newStreamerSettings, new JeffBot.JeffBot(newStreamerSettings));
+                    var jeffBotLogger = _loggerFactory.CreateLogger<JeffBot.JeffBot>();
+                    StreamerSettings[streamerThatWasUpdated] = (newStreamerSettings, new JeffBot.JeffBot(newStreamerSettings, jeffBotLogger));
                 }
             }
         }

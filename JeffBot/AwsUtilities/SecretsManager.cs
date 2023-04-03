@@ -20,7 +20,6 @@ namespace JeffBot.AwsUtilities
             var chain = new CredentialProfileStoreChain();
             if (!chain.TryGetAWSCredentials("jeff-personal", out var awsCredentials))
             {
-                Console.WriteLine("Could not find AWS Credentials");
                 throw new ArgumentException("No AWS credential profile called 'jeff-personal' was found");
             }
             using IAmazonSecretsManager client = new AmazonSecretsManagerClient(awsCredentials, RegionEndpoint.GetBySystemName(region));

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using TwitchLib.Api.Helix.Models.Moderation.BanUser;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
@@ -11,7 +12,7 @@ namespace JeffBot
     public class BanHateCommand : BotCommandBase
     {
         #region Constructor
-        public BanHateCommand(BotCommandSettings botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings)
+        public BanHateCommand(BotCommandSettings botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings, logger)
         {
             BotCommandSettings.GlobalCooldown = 0;
             BotCommandSettings.UserCooldown = 0;
@@ -53,10 +54,9 @@ namespace JeffBot
             var followers = await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Users.GetUsersFollowsAsync(first: 100, toId: StreamerSettings.StreamerId, after: pagination));
             foreach (var follower in followers.Follows)
             {
-                Console.WriteLine(follower.FromUserName);
                 if (follower.FromUserName.Contains("hoss00312"))
                 {
-                    Console.WriteLine($"Banning this MOFO {follower.FromUserName}");
+                    Logger.LogInformation($"Banning this MOFO {follower.FromUserName}");
                     await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId ?? GlobalSettingsSingleton.Instance.DefaultBotId, new BanUserRequest { Reason = "We don't tolerate hate in this channel. Goodbye.", UserId = follower.FromUserId }));
                 }
             }

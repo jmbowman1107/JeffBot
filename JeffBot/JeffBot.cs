@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
@@ -17,6 +18,10 @@ namespace JeffBot
 {
     public class JeffBot
     {
+        #region ILogger
+        protected ILogger<JeffBot> Logger { get; set; }
+        #endregion
+
         #region BotCommands
         public List<IBotCommand> BotCommands { get; set; } = new();
         #endregion
@@ -37,9 +42,10 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public JeffBot(StreamerSettings streamerSettings)
+        public JeffBot(StreamerSettings streamerSettings, ILogger<JeffBot> logger)
         {
             StreamerSettings = streamerSettings;
+            Logger = logger;
             InitializeBotForStreamer();
         }
         #endregion
@@ -58,38 +64,38 @@ namespace JeffBot
                     switch (botFeature.Name)
                     {
                         case nameof(BotFeatureName.BanHate):
-                            BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;
                         case nameof(BotFeatureName.Heist):
-                            BotCommands.Add(new HeistCommand(new BotCommandSettings<HeistCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new HeistCommand(new BotCommandSettings<HeistCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;
                         case nameof(BotFeatureName.JeffRpg):
-                            BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;
                         case nameof(BotFeatureName.Clip):
-                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;
                         case nameof(BotFeatureName.AdvancedClip):
-                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;
                         case nameof(BotFeatureName.Mark):
-                            BotCommands.Add(new MarkCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new MarkCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;
                         case nameof(BotFeatureName.AskMeAnything):
-                            BotCommands.Add(new AskMeAnythingCommand(new BotCommandSettings<AskMeAnythingSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new AskMeAnythingCommand(new BotCommandSettings<AskMeAnythingSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;
                         case nameof(BotFeatureName.SongManagement):
-                            BotCommands.Add(new SongManagementCommand(new BotCommandSettings<SongManagementCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new SongManagementCommand(new BotCommandSettings<SongManagementCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;
                         default:
-                            BotCommands.Add(new GenericCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings));
+                            BotCommands.Add(new GenericCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to setup command for streamer: {StreamerSettings.StreamerName}");
-                    Console.WriteLine(JsonConvert.SerializeObject(botFeature), ex);
+                    Logger.LogInformation($"Failed to setup command for streamer: {StreamerSettings.StreamerName}");
+                    Logger.LogError(JsonConvert.SerializeObject(botFeature), ex);
                 }
             }
             InitializeBotCommands();
@@ -116,7 +122,7 @@ namespace JeffBot
             catch (Exception ex)
             {
                 // TODO: How do we handle this?
-                Console.WriteLine(ex.ToString());
+                Logger.LogError(ex.ToString());
             }
         }
         #endregion
@@ -137,7 +143,7 @@ namespace JeffBot
         #region InitializeChat
         private void InitializeChat()
         {
-            Console.WriteLine($"Initialize {StreamerSettings.StreamerName}'s chat as {StreamerSettings.StreamerBotName}");
+            Logger.LogInformation($"Initialize {StreamerSettings.StreamerName}'s chat as {StreamerSettings.StreamerBotName}");
             ConnectionCredentials credentials = new ConnectionCredentials((StreamerSettings.StreamerBotName), $"oauth:{(!StreamerSettings.UseDefaultBot ? StreamerSettings.StreamerBotOauthToken : GlobalSettingsSingleton.Instance.DefaultBotOauthToken)}");
             var clientOptions = new ClientOptions
             {
@@ -157,7 +163,7 @@ namespace JeffBot
             WebsocketClient.OnStateChanged += WebSocketClient_OnStateChanged;
             if (!TwitchChatClient.Connect())
             {
-                Console.WriteLine($"Failed to connect to {StreamerSettings.StreamerName}'s chat as {StreamerSettings.StreamerBotName}");
+                Logger.LogError($"Failed to connect to {StreamerSettings.StreamerName}'s chat as {StreamerSettings.StreamerBotName}");
                 WaitAndAttemptReconnection();
             }
         }
@@ -177,7 +183,7 @@ namespace JeffBot
         #region ChatClient_OnLog
         private void ChatClient_OnLog(object sender, OnLogArgs e)
         {
-            // Console.WriteLine($"{e.DateTime.ToString()}: {e.BotUsername} - {e.Data}");
+            // Logger.LogInformation($"{e.DateTime.ToString()}: {e.BotUsername} - {e.Data}");
         }
         #endregion
         #region ChatClient_OnDisconnected
@@ -189,13 +195,13 @@ namespace JeffBot
         #region ChatClient_OnConnected
         private void ChatClient_OnConnected(object sender, OnConnectedArgs e)
         {
-            Console.WriteLine($"Connected to {e.BotUsername}");
+            Logger.LogInformation($"Connected to {e.BotUsername}");
         }
         #endregion
         #region ChatClient_OnJoinedChannel
         private void ChatClient_OnJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
-            Console.WriteLine($"Hey guys! I am a bot connected via TwitchLib to {StreamerSettings.StreamerName}'s chat as the user {StreamerSettings.StreamerBotName}");
+            Logger.LogInformation($"Hey guys! I am a bot connected via TwitchLib to {StreamerSettings.StreamerName}'s chat as the user {StreamerSettings.StreamerBotName}");
         }
         #endregion
         #region ChatClient_OnMessageReceived
@@ -208,7 +214,7 @@ namespace JeffBot
         private async void ChatClient_OnIncorrectLogin(object sender, OnIncorrectLoginArgs e)
         {
             if (e.Exception == null) return;
-            Console.WriteLine($"Incorrect chat login for streamer {StreamerSettings.StreamerName} with error message {e.Exception.Message}");
+            Logger.LogInformation($"Incorrect chat login for streamer {StreamerSettings.StreamerName} with error message {e.Exception.Message}");
             if (e.Exception.Message.Contains("Login authentication failed"))
             {
                 try
@@ -226,7 +232,7 @@ namespace JeffBot
         #region WebSocketClient_OnStateChanged
         private void WebSocketClient_OnStateChanged(object sender, OnStateChangedEventArgs e)
         {
-            Console.WriteLine($"Chat client websocket had a change in state in {StreamerSettings.StreamerName}'s chat with bot {StreamerSettings.StreamerBotName}: IsConnected = {e.IsConnected}");
+            Logger.LogInformation($"Chat client websocket had a change in state in {StreamerSettings.StreamerName}'s chat with bot {StreamerSettings.StreamerBotName}: IsConnected = {e.IsConnected}");
             if (e.IsConnected) return;
             try
             {
@@ -250,8 +256,8 @@ namespace JeffBot
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error when trying to reconnect to twitch chat for {StreamerSettings.StreamerName} as {StreamerSettings.StreamerBotName}.");
-                Console.WriteLine(ex);
+                Logger.LogError($"Error when trying to reconnect to twitch chat for {StreamerSettings.StreamerName} as {StreamerSettings.StreamerBotName}.");
+                Logger.LogError(ex.ToString());
             }
         }
         #endregion
@@ -275,7 +281,7 @@ namespace JeffBot
         private void WaitAndAttemptReconnection()
         {
             // If we disconnect, wait 30 seconds, cleanup and reconnect.
-            Console.WriteLine($"Disconnected, trying to reconnect..");
+            Logger.LogInformation($"Disconnected, trying to reconnect..");
             Task.Delay(30000).Wait();
             TwitchChatClient.OnLog -= ChatClient_OnLog;
             TwitchChatClient.OnJoinedChannel -= ChatClient_OnJoinedChannel;
