@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Amazon.Runtime.CredentialManagement;
-using Amazon.SecretsManager.Model;
-using Amazon.SecretsManager;
 using Amazon;
+using Amazon.Runtime.CredentialManagement;
+using Amazon.SecretsManager;
+using Amazon.SecretsManager.Model;
 using Newtonsoft.Json;
 
 namespace JeffBot.AwsUtilities
@@ -16,7 +16,7 @@ namespace JeffBot.AwsUtilities
         {
             var secretName = "JeffBotSecrets";
             var region = "us-east-1";
-            #if DEBUG
+#if DEBUG
             var chain = new CredentialProfileStoreChain();
             if (!chain.TryGetAWSCredentials("jeff-personal", out var awsCredentials))
             {
@@ -24,9 +24,9 @@ namespace JeffBot.AwsUtilities
                 throw new ArgumentException("No AWS credential profile called 'jeff-personal' was found");
             }
             using IAmazonSecretsManager client = new AmazonSecretsManagerClient(awsCredentials, RegionEndpoint.GetBySystemName(region));
-            #else
+#else
             using IAmazonSecretsManager client = new AmazonSecretsManagerClient(RegionEndpoint.GetBySystemName(region));
-            #endif
+#endif
 
             var request = new GetSecretValueRequest
             {
@@ -41,6 +41,7 @@ namespace JeffBot.AwsUtilities
             }
             catch (Exception e)
             {
+                // TODO: Catch and handle this.
                 // For a list of the exceptions thrown, see
                 // https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
                 throw;
@@ -54,7 +55,7 @@ namespace JeffBot.AwsUtilities
 
             // Error will be caught later if empty..
             return string.Empty;
-        } 
+        }
         #endregion
     }
 }

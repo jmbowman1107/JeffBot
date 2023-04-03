@@ -46,6 +46,6 @@
         SoundCloud,
         AmazonMusic,
         None
-    } 
+    }
     #endregion
 }

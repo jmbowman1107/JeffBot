@@ -24,7 +24,7 @@ namespace JeffBot
         public List<HeistParticipant> PreviousHeistParticipants { get; set; } = new List<HeistParticipant>();
         #endregion
         #region HeistParticipants
-        public List<HeistParticipant> HeistParticipants { get; set; } = new List<HeistParticipant>(); 
+        public List<HeistParticipant> HeistParticipants { get; set; } = new List<HeistParticipant>();
         #endregion
         #region HeistInProgress
         public bool HeistInProgress { get; set; }

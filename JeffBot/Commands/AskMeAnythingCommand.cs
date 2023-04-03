@@ -24,7 +24,7 @@ namespace JeffBot
 
         #region Constructor
         public AskMeAnythingCommand(BotCommandSettings<AskMeAnythingSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
-        {}
+        { }
         #endregion
 
         #region ProcessMessage - Override
@@ -85,7 +85,7 @@ namespace JeffBot
 
             if (BotCommandSettings.CustomSettings.ShouldReactToGiftSubs)
             {
-                TwitchChatClient.OnGiftedSubscription += async (sender, args) =>
+                TwitchChatClient.OnGiftedSubscription += (sender, args) =>
                 {
                     // TODO: This should call AskAnything for the GiftedSubscription, except we only wanna do this single gift subs.. not community gifted.. not sure how to determine..
                 };
@@ -120,7 +120,7 @@ namespace JeffBot
             {
                 TwitchPubSubClient.OnBitsReceived += async (sender, args) =>
                 {
-                    await AskAnything(args.ChannelName, args.Username,args.Username, $"{args.Username} just gave {args.TotalBitsUsed} bits to {args.ChannelName}!");
+                    await AskAnything(args.ChannelName, args.Username, args.Username, $"{args.Username} just gave {args.TotalBitsUsed} bits to {args.ChannelName}!");
                 };
             }
 
@@ -175,14 +175,14 @@ namespace JeffBot
 
             if (!string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalAIPrompt))
             {
-                chatPrompts.Add(new ChatPrompt("system",  BotCommandSettings.CustomSettings.AdditionalAIPrompt));
+                chatPrompts.Add(new ChatPrompt("system", BotCommandSettings.CustomSettings.AdditionalAIPrompt));
             }
 
             chatPrompts.AddRange(additionalPrompts.Select(prompt => new ChatPrompt("system", prompt)));
 
-            if (UsersContext.ContainsKey(userName))
+            if (UsersContext.TryGetValue(userName, out LimitedQueue<(string prompt, string response)> value))
             {
-                foreach (var prompt in UsersContext[userName])
+                foreach (var prompt in value)
                 {
                     chatPrompts.Add(new ChatPrompt("user", prompt.prompt));
                     chatPrompts.Add(new ChatPrompt("assistant", prompt.response));

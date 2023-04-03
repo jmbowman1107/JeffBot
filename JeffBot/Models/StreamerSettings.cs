@@ -66,7 +66,7 @@ namespace JeffBot
         public StreamerSettings()
         {
             var init = UseDefaultBot;
-        } 
+        }
         #endregion
     }
 }

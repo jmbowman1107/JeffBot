@@ -13,12 +13,12 @@ namespace JeffBot
     public class SongManagementCommand : BotCommandBase<SongManagementCommandSettings>
     {
         #region SpotifyClient
-        protected SpotifyClient SpotifyClient { get; set; } 
+        protected SpotifyClient SpotifyClient { get; set; }
         #endregion
 
         #region Constructor
         public SongManagementCommand(BotCommandSettings<SongManagementCommandSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings)
-        {}
+        { }
         #endregion
 
         #region ProcessMessage - Override
@@ -43,13 +43,13 @@ namespace JeffBot
                 return;
             }
             var authenticator = new AuthorizationCodeAuthenticator(
-                await AwsUtilities.SecretsManager.GetSecret("SPOTIFY_CLIENT_ID"), 
+                await AwsUtilities.SecretsManager.GetSecret("SPOTIFY_CLIENT_ID"),
                 await AwsUtilities.SecretsManager.GetSecret("SPOTIFY_CLIENT_SECRET"),
                 new AuthorizationCodeTokenResponse()
                 {
                     RefreshToken = StreamerSettings.SpotifyRefreshToken,
                     CreatedAt = DateTime.UtcNow.AddMinutes(-1)
-            });
+                });
             authenticator.TokenRefreshed += async (sender, response) =>
             {
                 Console.Write("Refreshing token.");

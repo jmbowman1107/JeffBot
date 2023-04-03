@@ -29,7 +29,7 @@ namespace JeffBot
         public long Rank { get; set; }
         #endregion
         #region DisplayName
-        public string DisplayName { get; set; } 
+        public string DisplayName { get; set; }
         #endregion
     }
 }

@@ -1,10 +1,10 @@
 ﻿using AspNet.Security.OAuth.Spotify;
 using AspNet.Security.OAuth.Twitch;
+using JeffBot.AwsUtilities;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Logging;
-using JeffBot.AwsUtilities;
 
 namespace JeffBotWebApi;
 

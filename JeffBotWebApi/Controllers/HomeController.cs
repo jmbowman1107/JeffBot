@@ -1,10 +1,9 @@
-﻿using JeffBotWebApi.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using AspNet.Security.OAuth.Spotify;
 using AspNet.Security.OAuth.Twitch;
+using JeffBotWebApi.Models;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
 
 namespace JeffBotWebApi.Controllers
 {

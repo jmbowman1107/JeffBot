@@ -25,22 +25,22 @@ namespace JeffBot.AwsUtilities
             get
             {
                 if (_dbContext != null) return _dbContext;
-                #if DEBUG
+#if DEBUG
                 var chain = new CredentialProfileStoreChain();
                 if (!chain.TryGetAWSCredentials("jeff-personal", out var awsCredentials))
                 {
                     throw new ArgumentException("No AWS credential profile called 'jeff-personal' was found");
                 }
                 var client = new AmazonDynamoDBClient(awsCredentials);
-                #else
+#else
                 var client = new AmazonDynamoDBClient(new AmazonDynamoDBConfig { RegionEndpoint = RegionEndpoint.USEast1 });
-                #endif
+#endif
 
                 var dbContext = new DynamoDBContext(client);
                 _dbContext = dbContext;
                 return _dbContext;
             }
-        } 
+        }
         #endregion
 
         #region PopulateOrUpdateStreamerSettings

@@ -24,13 +24,13 @@ namespace JeffBotWorkerService
         public Worker(ILogger<Worker> logger)
         {
             _logger = logger;
-        } 
+        }
         #endregion
 
         #region ExecuteAsync - Override
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            #if DEBUG
+#if DEBUG
             var chain = new CredentialProfileStoreChain();
             if (!chain.TryGetAWSCredentials("jeff-personal", out var awsCredentials))
             {
@@ -38,9 +38,9 @@ namespace JeffBotWorkerService
                 throw new ArgumentException("No AWS credential profile called 'jeff-personal' was found");
             }
             using var dynamoDbStreamsClient = new AmazonDynamoDBStreamsClient(awsCredentials);
-            #else
+#else
             using var dynamoDbStreamsClient = new AmazonDynamoDBStreamsClient(new AmazonDynamoDBStreamsConfig{ RegionEndpoint = RegionEndpoint.USEast1 });
-            #endif
+#endif
 
             var globalSettings = await JeffBot.AwsUtilities.DynamoDb.GetGlobalSettings(stoppingToken);
             JeffBot.GlobalSettingsSingleton.Initialize(globalSettings);
@@ -58,7 +58,7 @@ namespace JeffBotWorkerService
             var stream = streams.Streams.FirstOrDefault(a => a.TableName == "JeffBotStreamerSettings");
 
             while (!stoppingToken.IsCancellationRequested)
-            {                
+            {
                 // Watch for settings changes from DynamoDb
                 if (stream == null)
                 {

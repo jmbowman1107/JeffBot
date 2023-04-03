@@ -26,13 +26,13 @@ namespace JeffBot
         FeaturePermissionLevel PermissionLevel { get; set; }
         #endregion
         #region GlobalCooldown
-        int GlobalCooldown { get; set; } 
+        int GlobalCooldown { get; set; }
         #endregion
         #region UserCooldown
-        int UserCooldown { get; set; } 
+        int UserCooldown { get; set; }
         #endregion
         #region CommandAvailability
-        CommandAvailability CommandAvailability { get; set; } 
+        CommandAvailability CommandAvailability { get; set; }
         #endregion
         #region IsEnabled
         bool IsEnabled { get; set; }
@@ -43,7 +43,7 @@ namespace JeffBot
     public interface IBotCommandSettings<T> : IBotCommandSettings
     {
         #region CustomSettings
-        new T CustomSettings { get; set; } 
+        new T CustomSettings { get; set; }
         #endregion
     }
 }

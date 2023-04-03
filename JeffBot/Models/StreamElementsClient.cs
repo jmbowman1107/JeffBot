@@ -23,7 +23,7 @@ namespace JeffBot
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", JwtTokenString);
                 return httpClient;
             }
-        } 
+        }
         #endregion
 
         #region GetUser
@@ -45,7 +45,7 @@ namespace JeffBot
         public async Task AddOrRemovePointsFromUser(string userName, int amountOfPoints)
         {
             await HttpClient.PutAsync(new Uri($"https://api.streamelements.com/kappa/v2/points/{ChannelId}/{userName}/{amountOfPoints}"), null);
-        } 
+        }
         #endregion
     }
 }

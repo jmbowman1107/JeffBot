@@ -21,19 +21,19 @@ namespace JeffBot
         public List<IBotCommand> BotCommands { get; set; } = new();
         #endregion
         #region ManagedTwitchApi
-        protected ManagedTwitchApi TwitchApi { get; set; } 
+        protected ManagedTwitchApi TwitchApi { get; set; }
         #endregion
         #region TwitchChatClient
-        protected TwitchClient TwitchChatClient { get; set; } 
+        protected TwitchClient TwitchChatClient { get; set; }
         #endregion
         #region TwitchPubSubClient
-        protected TwitchPubSub TwitchPubSubClient { get; set; } 
+        protected TwitchPubSub TwitchPubSubClient { get; set; }
         #endregion
         #region WebsocketClient
-        protected WebSocketClient WebsocketClient { get; set; } 
+        protected WebSocketClient WebsocketClient { get; set; }
         #endregion
         #region StreamerSettings
-        public StreamerSettings StreamerSettings { get; set; } 
+        public StreamerSettings StreamerSettings { get; set; }
         #endregion
 
         #region Constructor
@@ -86,7 +86,7 @@ namespace JeffBot
                             break;
                     }
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     Console.WriteLine($"Failed to setup command for streamer: {StreamerSettings.StreamerName}");
                     Console.WriteLine(JsonConvert.SerializeObject(botFeature), ex);
@@ -118,7 +118,7 @@ namespace JeffBot
                 // TODO: How do we handle this?
                 Console.WriteLine(ex.ToString());
             }
-        } 
+        }
         #endregion
 
         #region InitializePubSub
@@ -220,7 +220,7 @@ namespace JeffBot
                     // TODO: How to handle this? Just let it fail for now..
                 }
             }
-        } 
+        }
         #endregion
 
         #region WebSocketClient_OnStateChanged

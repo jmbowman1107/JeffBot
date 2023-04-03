@@ -14,7 +14,7 @@ namespace JeffBot
     public abstract class BotCommandBase : IBotCommand
     {
         private DateTimeOffset _lastExecuted;
-        private readonly Dictionary<string, DateTimeOffset>  _usersLastExecuted;
+        private readonly Dictionary<string, DateTimeOffset> _usersLastExecuted;
 
         #region BotCommandSettings - IBotCommand Member
         public BotCommandSettings BotCommandSettings { get; set; }
@@ -38,7 +38,7 @@ namespace JeffBot
         public ITwitchPubSub TwitchPubSubClient { get; set; }
         #endregion
         #region StreamerSettings - IBotCommand Member
-        public StreamerSettings StreamerSettings { get; set; } 
+        public StreamerSettings StreamerSettings { get; set; }
         #endregion
 
         #region Constructor
@@ -187,10 +187,10 @@ namespace JeffBot
         #endregion
     }
 
-    public abstract class BotCommandBase<T> : BotCommandBase where T: new()
+    public abstract class BotCommandBase<T> : BotCommandBase where T : new()
     {
         #region BotCommandSettings
-        public new BotCommandSettings<T> BotCommandSettings { get; set; } 
+        public new BotCommandSettings<T> BotCommandSettings { get; set; }
         #endregion
 
         #region Constructor
@@ -198,7 +198,7 @@ namespace JeffBot
         {
             BotCommandSettings = botCommandSettings;
             BotCommandSettings.CustomSettings ??= new T();
-        } 
+        }
         #endregion
     }
 }

@@ -1,11 +1,11 @@
-﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Support.UI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 using TwitchLib.Api.Helix.Models.Clips.CreateClip;
 using TwitchLib.Client;
 using TwitchLib.Client.Models;
@@ -19,7 +19,7 @@ namespace JeffBot
         public string NoobHunterFormUrl { get; set; } = "http://bit.ly/NHClips";
         #endregion
         #region MostRecentClips
-        public Dictionary<string, (string url, DateTime dateTime)> MostRecentClips { get; set; } = new Dictionary<string, (string url, DateTime dateTime)> ();
+        public Dictionary<string, (string url, DateTime dateTime)> MostRecentClips { get; set; } = new Dictionary<string, (string url, DateTime dateTime)>();
         #endregion
 
         #region Constructor
@@ -79,7 +79,7 @@ namespace JeffBot
                 {
                     TwitchChatClient.SendMessage(chatMessage.Channel, $"Clip created successfully {clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty)}");
                     MostRecentClips[chatMessage.Username] = (clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty), DateTime.UtcNow);
-                    if (canPerformAdvancedClip) 
+                    if (canPerformAdvancedClip)
                         TwitchChatClient.SendMessage(chatMessage.Channel, $"@{chatMessage.DisplayName} you can submit this clip to NoobHunter for consideration by typing \"!clip noobhunter\" in chat.");
                 }
                 else
@@ -96,7 +96,7 @@ namespace JeffBot
                         TwitchChatClient.SendMessage(chatMessage.Channel, $"Stream successfully clipped: ");
                         TwitchChatClient.SendMessage(chatMessage.Channel, $"Clip created successfully {clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty)}");
                         MostRecentClips[chatMessage.Username] = (clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty), DateTime.UtcNow);
-                        if (canPerformAdvancedClip) 
+                        if (canPerformAdvancedClip)
                             TwitchChatClient.SendMessage(chatMessage.Channel, $"@{chatMessage.DisplayName} you can submit this clip to NoobHunter for consideration by typing \"!clip noobhunter\" in chat.");
                     }
                     else
@@ -153,7 +153,7 @@ namespace JeffBot
                     TwitchChatClient.SendMessage(chatMessage.Channel, $"An error occurred submitting your clip to NoobHunter, you can try again, or just yell at Jeff to fix it.");
                 }
             }
-        } 
+        }
         #endregion
         #region FillOutNoobHunterFormAndSubmit
         private (bool success, string message) FillOutNoobHunterFormAndSubmit(string url)

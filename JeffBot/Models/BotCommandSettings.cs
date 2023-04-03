@@ -23,7 +23,7 @@ namespace JeffBot
         public List<string> AdditionalTriggerWords { get; set; } = new();
         #endregion
         #region TriggerRegexes
-        public List<string> TriggerRegexes{ get; set; } = new();
+        public List<string> TriggerRegexes { get; set; } = new();
         #endregion
         #region PermissionLevel
         public FeaturePermissionLevel PermissionLevel { get; set; } = FeaturePermissionLevel.Broadcaster;
@@ -49,15 +49,15 @@ namespace JeffBot
         public BotCommandSettings(string name, string triggerWord, FeaturePermissionLevel permissionLevel)
         {
             Name = name;
-            TriggerWord = triggerWord; 
+            TriggerWord = triggerWord;
             PermissionLevel = permissionLevel;
         }
         public BotCommandSettings()
-        { } 
+        { }
         #endregion
     }
 
-    public class BotCommandSettings<T> : BotCommandSettings, IBotCommandSettings<T> where T: new()
+    public class BotCommandSettings<T> : BotCommandSettings, IBotCommandSettings<T> where T : new()
     {
         public BotCommandSettings(BotCommandSettings botCommandSettings)
         {
