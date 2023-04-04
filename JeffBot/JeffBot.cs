@@ -109,6 +109,7 @@ namespace JeffBot
         {
             try
             {
+                Logger.LogInformation($"Disconnecting the bot {StreamerSettings.StreamerBotName} from {StreamerSettings.StreamerName}'s stream.");
                 if (TwitchChatClient.IsConnected)
                 {
                     TwitchChatClient.OnLog -= ChatClient_OnLog;
