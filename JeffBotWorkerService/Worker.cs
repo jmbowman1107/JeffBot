@@ -32,7 +32,7 @@ namespace JeffBotWorkerService
         #region ExecuteAsync - Override
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-#if DEBUG
+            #if DEBUG
             var chain = new CredentialProfileStoreChain();
             if (!chain.TryGetAWSCredentials("jeff-personal", out var awsCredentials))
             {
@@ -40,9 +40,9 @@ namespace JeffBotWorkerService
                 throw new ArgumentException("No AWS credential profile called 'jeff-personal' was found");
             }
             using var dynamoDbStreamsClient = new AmazonDynamoDBStreamsClient(awsCredentials);
-#else
+            #else
             using var dynamoDbStreamsClient = new AmazonDynamoDBStreamsClient(new AmazonDynamoDBStreamsConfig{ RegionEndpoint = RegionEndpoint.USEast1 });
-#endif
+            #endif
 
             var globalSettings = await JeffBot.AwsUtilities.DynamoDb.GetGlobalSettings(stoppingToken);
             JeffBot.GlobalSettingsSingleton.Initialize(globalSettings);
@@ -50,6 +50,11 @@ namespace JeffBotWorkerService
             var streamerSettings = JeffBot.AwsUtilities.DynamoDb.DbContext.FromScanAsync<StreamerSettings>(new ScanOperationConfig());
             foreach (var streamer in await streamerSettings.GetRemainingAsync(stoppingToken))
             {
+                if (!streamer.IsActive)
+                {
+                    _logger.LogInformation($"{streamer.StreamerName}'s bot is set not to be active, skipping..");
+                    continue;
+                }
                 _logger.LogInformation($"Starting bot {streamer.StreamerBotName} for streamer {streamer.StreamerName}");
                 var jeffBotLogger = _loggerFactory.CreateLogger<JeffBot.JeffBot>();
                 StreamerSettings[streamer.StreamerId] = (streamer, new JeffBot.JeffBot(streamer, jeffBotLogger));
@@ -69,6 +74,7 @@ namespace JeffBotWorkerService
                 }
                 else
                 {
+                    // TODO: When this scales beyond need of a single container, can we utilize a combination of an update (date time?) and System.Environment.MachineName to determine if a bot should be added?
                     await LoadDynamoDbStreamShards(stoppingToken, shardIterators, dynamoDbStreamsClient, stream);
                     await CheckForUpdatesAndUpdateStreamers(stoppingToken, shardIterators, dynamoDbStreamsClient, JeffBot.AwsUtilities.DynamoDb.DbContext);
                 }
@@ -113,6 +119,19 @@ namespace JeffBotWorkerService
                 {
                     var streamerThatWasUpdated = update.Dynamodb.Keys["StreamerId"].S;
                     var newStreamerSettings = await dbContext.LoadAsync<StreamerSettings>(streamerThatWasUpdated, stoppingToken);
+                    if (!newStreamerSettings.IsActive)
+                    {
+                        if (StreamerSettings.ContainsKey(streamerThatWasUpdated))
+                        {
+                            if (StreamerSettings[streamerThatWasUpdated].StreamerSettings.IsActive)
+                            {
+                                StreamerSettings[streamerThatWasUpdated].JeffBot.ShutdownBotForStreamer();
+                                StreamerSettings.Remove(streamerThatWasUpdated);
+                            }
+                        }
+                        // TODO: For now we just ignore non active bots..
+                        continue;
+                    }
                     // TODO: For now just hardcode this, need to do this in a better way, and probably make it a property in some way..
                     // Perhaps look at changes between the settings, if certain settings change, need to reboot, if not, it's fine
                     _logger.LogInformation($"Updated setting for streamer {newStreamerSettings.StreamerName}");

@@ -137,9 +137,11 @@ namespace JeffBot
             TwitchPubSubClient.OnPubSubServiceConnected += PubSubClient_OnPubSubServiceConnected;
             TwitchPubSubClient.OnListenResponse += PubSubClient_OnListenResponse;
             TwitchPubSubClient.ListenToFollows(StreamerSettings.StreamerId);
-            //TwitchPubSubClient.ListenToSubscriptions(StreamerSettings.StreamerId);
-            //TwitchPubSubClient.ListenToRaid(StreamerSettings.StreamerId);
-            //TwitchPubSubClient.ListenToBitsEventsV2(StreamerSettings.StreamerId);
+            if (!string.IsNullOrWhiteSpace(StreamerSettings.StreamerOauthToken))
+            {
+                TwitchPubSubClient.ListenToRaid(StreamerSettings.StreamerId);
+                TwitchPubSubClient.ListenToBitsEventsV2(StreamerSettings.StreamerId);
+            }
             TwitchPubSubClient.Connect();
         }
         #endregion
@@ -269,7 +271,7 @@ namespace JeffBot
         private void PubSubClient_OnPubSubServiceConnected(object sender, EventArgs e)
         {
             // SendTopics accepts an oauth optionally, which is necessary for some topics
-            TwitchPubSubClient.SendTopics(StreamerSettings.StreamerBotOauthToken);
+            TwitchPubSubClient.SendTopics(string.IsNullOrEmpty(StreamerSettings.StreamerOauthToken) ? StreamerSettings.StreamerBotOauthToken : StreamerSettings.StreamerOauthToken);
         }
         #endregion
         #region PubSubClient_OnListenResponse

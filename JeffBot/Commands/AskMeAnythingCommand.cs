@@ -72,7 +72,7 @@ namespace JeffBot
             // React to first time message in chat
             if (BotCommandSettings.CustomSettings.ShouldReactToFirstTimeChatters && chatMessage.IsFirstMessage)
             {
-                await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim(), new List<string> { "This is their first ever message in chat. Be welcoming and welcome them to the stream :)." });
+                await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim(), new List<string> { $"This is {chatMessage.DisplayName}'s first ever message in chat. Be welcoming and welcome them to the stream :)." });
                 return true;
             }
 

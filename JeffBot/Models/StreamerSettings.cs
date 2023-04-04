@@ -22,6 +22,9 @@ namespace JeffBot
         }
         #endregion
 
+        #region IsActive
+        public bool IsActive { get; set; } = true;
+        #endregion
         #region StreamerId
         [DynamoDBHashKey()]
         public string StreamerId { get; set; }
