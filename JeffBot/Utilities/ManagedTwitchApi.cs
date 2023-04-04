@@ -36,11 +36,15 @@ namespace JeffBot
         #endregion
 
         #region RefreshAccessTokenAsync
-        public async Task<RefreshResponse> RefreshAccessTokenAsync()
+        public async Task RefreshAccessTokenAsync()
         {
-            var newToken = await TwitchApi.Auth.RefreshAuthTokenAsync(_refreshToken, _clientSecret, _clientId);
-            await UpdateTokenDetails(newToken);
-            return newToken;
+            var botToken = await TwitchApi.Auth.RefreshAuthTokenAsync(_refreshToken, _clientSecret, _clientId);
+            RefreshResponse streamerToken = null;
+            if (!string.IsNullOrWhiteSpace(StreamerSettings.StreamerRefreshToken))
+            {
+                streamerToken = await TwitchApi.Auth.RefreshAuthTokenAsync(StreamerSettings.StreamerRefreshToken, _clientSecret, _clientId);
+            }
+            await UpdateTokenDetails(botToken, streamerToken);
         }
         #endregion
         #region ExecuteRequest
@@ -82,22 +86,28 @@ namespace JeffBot
         }
         #endregion
         #region UpdateTokenDetails
-        private async Task UpdateTokenDetails(RefreshResponse newToken)
+        private async Task UpdateTokenDetails(RefreshResponse botToken, RefreshResponse streamerToken)
         {
-            TwitchApi.Settings.AccessToken = newToken.AccessToken;
-            _refreshToken = newToken.RefreshToken;
-            _accessTokenExpiration = DateTime.Now.AddSeconds(newToken.ExpiresIn - 1800); // Subtract 30 minutes as a buffer
+            TwitchApi.Settings.AccessToken = botToken.AccessToken;
+            _refreshToken = botToken.RefreshToken;
+            _accessTokenExpiration = DateTime.Now.AddSeconds(botToken.ExpiresIn - 1800); // Subtract 30 minutes as a buffer
+
+            if (streamerToken != null)
+            {
+                StreamerSettings.StreamerOauthToken = streamerToken.AccessToken;
+                StreamerSettings.StreamerRefreshToken = streamerToken.RefreshToken;
+            }
 
             if (!StreamerSettings.UseDefaultBot)
             {
-                StreamerSettings.StreamerBotOauthToken = newToken.AccessToken;
-                StreamerSettings.StreamerBotRefreshToken = newToken.RefreshToken;
+                StreamerSettings.StreamerBotOauthToken = botToken.AccessToken;
+                StreamerSettings.StreamerBotRefreshToken = botToken.RefreshToken;
                 await AwsUtilities.DynamoDb.PopulateOrUpdateStreamerSettings(StreamerSettings);
             }
             else
             {
-                GlobalSettingsSingleton.Instance.DefaultBotOauthToken = newToken.AccessToken;
-                GlobalSettingsSingleton.Instance.DefaultBotRefreshToken = newToken.RefreshToken;
+                GlobalSettingsSingleton.Instance.DefaultBotOauthToken = botToken.AccessToken;
+                GlobalSettingsSingleton.Instance.DefaultBotRefreshToken = botToken.RefreshToken;
                 await AwsUtilities.DynamoDb.UpdateGlobalSettings(GlobalSettingsSingleton.Instance);
             }
         }
