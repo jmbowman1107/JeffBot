@@ -15,10 +15,10 @@ namespace JeffBot
         #region Constructor
         public StreamManagementCommand(BotCommandSettings botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings, logger)
         {
-        } 
+        }
         #endregion
 
-        #region PrcoessMessage - Override
+        #region ProcessMessage - Override
         public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
         {
             var message = chatMessage.Message;
@@ -47,7 +47,7 @@ namespace JeffBot
             return true;
         }
         #endregion
-        #region Initialize
+        #region Initialize - Override
         public override void Initialize()
         {
         } 

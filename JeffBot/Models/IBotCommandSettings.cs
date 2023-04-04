@@ -37,7 +37,9 @@ namespace JeffBot
         #region IsEnabled
         bool IsEnabled { get; set; }
         #endregion
-        object CustomSettings { get; set; }
+        #region CustomSettings
+        object CustomSettings { get; set; } 
+        #endregion
     }
 
     public interface IBotCommandSettings<T> : IBotCommandSettings

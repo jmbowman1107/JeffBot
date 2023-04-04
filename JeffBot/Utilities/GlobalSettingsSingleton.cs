@@ -7,8 +7,7 @@ namespace JeffBot
         private static GlobalSettings _instance;
         private static bool _isInitialized;
 
-        private GlobalSettingsSingleton() { }
-
+        #region Instance
         public static GlobalSettings Instance
         {
             get
@@ -20,7 +19,13 @@ namespace JeffBot
                 return _instance;
             }
         }
+        #endregion
 
+        #region Constructor
+        private GlobalSettingsSingleton() { } 
+        #endregion
+
+        #region Initialize
         public static void Initialize(GlobalSettings globalSettings)
         {
             if (_isInitialized)
@@ -30,6 +35,7 @@ namespace JeffBot
 
             _instance = globalSettings;
             _isInitialized = true;
-        }
+        } 
+        #endregion
     }
 }

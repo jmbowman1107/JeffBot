@@ -55,7 +55,7 @@ namespace JeffBot
                 await EnsureAccessTokenAsync();
                 await apiCall(TwitchApi);
             }
-            catch (TokenExpiredException)
+            catch (Exception ex) when (ex is TokenExpiredException or BadScopeException)
             {
                 await RefreshAccessTokenAsync();
                 await apiCall(TwitchApi);
