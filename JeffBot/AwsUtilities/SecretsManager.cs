@@ -38,7 +38,7 @@ namespace JeffBot.AwsUtilities
             {
                 response = await client.GetSecretValueAsync(request);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // TODO: Catch and handle this.
                 // For a list of the exceptions thrown, see
@@ -47,9 +47,9 @@ namespace JeffBot.AwsUtilities
             }
 
             var secretDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.SecretString);
-            if (secretDictionary != null && secretDictionary.ContainsKey(name))
+            if (secretDictionary != null && secretDictionary.TryGetValue(name, out string value))
             {
-                return secretDictionary[name];
+                return value;
             }
 
             // Error will be caught later if empty..

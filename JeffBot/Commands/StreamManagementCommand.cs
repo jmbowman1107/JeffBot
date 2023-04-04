@@ -113,7 +113,7 @@ namespace JeffBot
                 return;
             }
 
-            if (currentTags.Count() == 10)
+            if (currentTags.Count == 10)
             {
                 TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"There are already 10 tags, please remove a tag before adding a new one.");
                 return;

@@ -147,7 +147,7 @@ namespace JeffBot
         private void InitializeChat()
         {
             Logger.LogInformation($"Initialize {StreamerSettings.StreamerName}'s chat as {StreamerSettings.StreamerBotName}");
-            ConnectionCredentials credentials = new ConnectionCredentials((StreamerSettings.StreamerBotName), $"oauth:{(!StreamerSettings.UseDefaultBot ? StreamerSettings.StreamerBotOauthToken : GlobalSettingsSingleton.Instance.DefaultBotOauthToken)}");
+            var credentials = new ConnectionCredentials((StreamerSettings.StreamerBotName), $"oauth:{(!StreamerSettings.UseDefaultBot ? StreamerSettings.StreamerBotOauthToken : GlobalSettingsSingleton.Instance.DefaultBotOauthToken)}");
             var clientOptions = new ClientOptions
             {
                 MessagesAllowedInPeriod = 750,
@@ -224,7 +224,7 @@ namespace JeffBot
                 {
                     await TwitchApi.RefreshAccessTokenAsync();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // TODO: How to handle this? Just let it fail for now..
                 }
