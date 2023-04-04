@@ -56,7 +56,7 @@ namespace JeffBot
         #region ChangeTitle
         private async Task ChangeTitle(ChatMessage chatMessage, string title)
         {
-            await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Channels.ModifyChannelInformationAsync(StreamerSettings.StreamerId, new ModifyChannelInformationRequest() { Title = parameter }, StreamerSettings.StreamerOauthToken));
+            await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Channels.ModifyChannelInformationAsync(StreamerSettings.StreamerId, new ModifyChannelInformationRequest() { Title = title }, StreamerSettings.StreamerOauthToken));
             TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"Stream title changed to: {title}");
         }
         #endregion
