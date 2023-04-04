@@ -44,6 +44,19 @@ namespace JeffBot
         }
         #endregion
         #region ExecuteRequest
+        public async Task ExecuteRequest(Func<TwitchAPI, Task> apiCall)
+        {
+            try
+            {
+                await EnsureAccessTokenAsync();
+                await apiCall(TwitchApi);
+            }
+            catch (TokenExpiredException)
+            {
+                await RefreshAccessTokenAsync();
+                await apiCall(TwitchApi);
+            }
+        }
         public async Task<T> ExecuteRequest<T>(Func<TwitchAPI, Task<T>> apiCall)
         {
             try

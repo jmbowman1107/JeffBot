@@ -87,6 +87,9 @@ namespace JeffBot
                         case nameof(BotFeatureName.SongManagement):
                             BotCommands.Add(new SongManagementCommand(new BotCommandSettings<SongManagementCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;
+                        case nameof(BotFeatureName.StreamManagement):
+                            BotCommands.Add(new StreamManagementCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            break;
                         default:
                             BotCommands.Add(new GenericCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;
