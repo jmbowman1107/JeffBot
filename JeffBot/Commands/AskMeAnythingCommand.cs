@@ -81,6 +81,8 @@ namespace JeffBot
         #region Initialize - Override
         public override async void Initialize()
         {
+            if (!IsCommandEnabled) return;
+
             OpenAIClient = new OpenAIClient(new OpenAIAuthentication(await SecretsManager.GetSecret("OPENAI_API_KEY")));
 
             if (BotCommandSettings.CustomSettings.ShouldReactToGiftSubs)
