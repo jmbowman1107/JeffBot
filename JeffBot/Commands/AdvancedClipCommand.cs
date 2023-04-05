@@ -71,21 +71,21 @@ namespace JeffBot
             {
                 if (!await IsStreamLive())
                 {
-                    TwitchChatClient.SendMessage(chatMessage.Channel, $"Cannot create clip for an offline stream.");
+                    TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"Cannot create clip for an offline stream.");
                     return;
                 }
                 clip = await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Clips.CreateClipAsync(StreamerSettings.StreamerId));
 
                 if (clip != null && clip.CreatedClips.Any())
                 {
-                    TwitchChatClient.SendMessage(chatMessage.Channel, $"Clip created successfully {clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty)}");
+                    TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"Clip created successfully {clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty)}");
                     MostRecentClips[chatMessage.Username] = (clip.CreatedClips[0].EditUrl.Replace("/edit", string.Empty), DateTime.UtcNow);
                     if (canPerformAdvancedClip)
-                        TwitchChatClient.SendMessage(chatMessage.Channel, $"@{chatMessage.DisplayName} you can submit this clip to NoobHunter for consideration by typing \"!clip noobhunter\" in chat.");
+                        TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"You can submit this clip to NoobHunter for consideration by typing \"!clip noobhunter\" in chat.");
                 }
                 else
                 {
-                    TwitchChatClient.SendMessage(chatMessage.Channel, $"Stream NOT successfully clipped.");
+                    TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"Stream NOT successfully clipped.");
                 }
             }
             catch (Exception ex)
@@ -132,7 +132,7 @@ namespace JeffBot
             }
             else
             {
-                TwitchChatClient.SendMessage(chatMessage.Channel, $"Sorry {chatMessage.DisplayName}, there are currently no clips you can submit to NoobHunter, please use !clip and then try again.");
+                TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"Sorry {chatMessage.DisplayName}, there are currently no clips you can submit to NoobHunter, please use !clip and then try again.");
             }
             if (url != string.Empty)
             {
@@ -142,16 +142,16 @@ namespace JeffBot
                     MostRecentClips.Remove(chatMessage.Username);
                     if (recentClip.Key != "default user")
                     {
-                        TwitchChatClient.SendMessage(chatMessage.Channel, $"{chatMessage.DisplayName}, {recentClip.Key}'s clip has been successfully submitted to NoobHunter!");
+                        TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{chatMessage.DisplayName}, {recentClip.Key}'s clip has been successfully submitted to NoobHunter!");
                     }
                     else
                     {
-                        TwitchChatClient.SendMessage(chatMessage.Channel, $"{chatMessage.DisplayName}, your clip has been successfully submitted to NoobHunter!");
+                        TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{chatMessage.DisplayName}, your clip has been successfully submitted to NoobHunter!");
                     }
                 }
                 else
                 {
-                    TwitchChatClient.SendMessage(chatMessage.Channel, $"An error occurred submitting your clip to NoobHunter, you can try again, or just yell at Jeff to fix it.");
+                    TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"An error occurred submitting your clip to NoobHunter, you can try again, or just yell at Jeff to fix it.");
                 }
             }
         }
