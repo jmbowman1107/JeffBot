@@ -50,7 +50,7 @@ namespace JeffBot
         #region Initialize - Override
         public override void Initialize()
         {
-        } 
+        }
         #endregion
 
         #region ChangeTitle
@@ -67,7 +67,7 @@ namespace JeffBot
             if (games.Games != null && games.Games.Any())
             {
                 // For now we just grab the first..
-                await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Channels.ModifyChannelInformationAsync(StreamerSettings.StreamerId, new ModifyChannelInformationRequest() {GameId = games.Games.First().Id}, StreamerSettings.StreamerOauthToken));
+                await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Channels.ModifyChannelInformationAsync(StreamerSettings.StreamerId, new ModifyChannelInformationRequest() { GameId = games.Games.First().Id }, StreamerSettings.StreamerOauthToken));
                 TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"Game changed to: {games.Games.First().Name}");
             }
             else
@@ -102,7 +102,7 @@ namespace JeffBot
             {
                 await RemoveTag(chatMessage, currentTags, tagName);
             }
-        } 
+        }
         #endregion
         #region AddTag
         private async Task AddTag(ChatMessage chatMessage, List<string> currentTags, string tagName)
@@ -120,7 +120,7 @@ namespace JeffBot
             }
 
             currentTags.Add(tagName);
-            await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Channels.ModifyChannelInformationAsync(StreamerSettings.StreamerId, new ModifyChannelInformationRequest() {Tags = currentTags.ToArray()}, StreamerSettings.StreamerOauthToken));
+            await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Channels.ModifyChannelInformationAsync(StreamerSettings.StreamerId, new ModifyChannelInformationRequest() { Tags = currentTags.ToArray() }, StreamerSettings.StreamerOauthToken));
             TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{tagName} has been successfully added.");
         }
         #endregion
@@ -134,7 +134,7 @@ namespace JeffBot
             }
 
             currentTags.Remove(tagName);
-            await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Channels.ModifyChannelInformationAsync(StreamerSettings.StreamerId, new ModifyChannelInformationRequest() {Tags = currentTags.ToArray()}, StreamerSettings.StreamerOauthToken));
+            await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Channels.ModifyChannelInformationAsync(StreamerSettings.StreamerId, new ModifyChannelInformationRequest() { Tags = currentTags.ToArray() }, StreamerSettings.StreamerOauthToken));
             TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{tagName} has been successfully removed.");
         }
         #endregion

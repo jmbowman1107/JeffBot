@@ -38,7 +38,7 @@ namespace JeffBot
         bool IsEnabled { get; set; }
         #endregion
         #region CustomSettings
-        object CustomSettings { get; set; } 
+        object CustomSettings { get; set; }
         #endregion
     }
 

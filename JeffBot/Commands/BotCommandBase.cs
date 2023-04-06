@@ -146,8 +146,7 @@ namespace JeffBot
         {
             if (DateTimeOffset.UtcNow >= _lastExecuted.AddSeconds(BotCommandSettings.GlobalCooldown))
             {
-                if (_usersLastExecuted.ContainsKey(chatMessage.Username.ToLower()) && DateTimeOffset.UtcNow <
-                    _usersLastExecuted[chatMessage.Username.ToLower()].AddSeconds(BotCommandSettings.UserCooldown))
+                if (_usersLastExecuted.TryGetValue(chatMessage.Username.ToLower(), out DateTimeOffset value) && DateTimeOffset.UtcNow < value.AddSeconds(BotCommandSettings.UserCooldown))
                 {
                     return false;
                 }

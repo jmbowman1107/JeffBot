@@ -10,7 +10,6 @@ namespace JeffBot
     {
         private readonly string _clientId;
         private readonly string _clientSecret;
-        private DateTime _accessTokenExpiration;
         private string _refreshToken;
 
         #region StreamerSettings
@@ -29,9 +28,8 @@ namespace JeffBot
             TwitchApi.Settings.ClientId = clientId;
             TwitchApi.Settings.Secret = clientSecret;
             StreamerSettings = streamerSettings;
-            TwitchApi.Settings.AccessToken = !StreamerSettings.UseDefaultBot ? StreamerSettings.StreamerBotOauthToken : GlobalSettingsSingleton.Instance.DefaultBotOauthToken;
-            _refreshToken = !StreamerSettings.UseDefaultBot ? StreamerSettings.StreamerBotRefreshToken : GlobalSettingsSingleton.Instance.DefaultBotRefreshToken; ;
-            _accessTokenExpiration = DateTime.Now.AddMinutes(235); // Tokens are typically good for 4 hours..
+            TwitchApi.Settings.AccessToken = !StreamerSettings.UseDefaultBot ? StreamerSettings.StreamerBotOauthToken : Singleton<GlobalSettings>.Instance.DefaultBotOauthToken;
+            _refreshToken = !StreamerSettings.UseDefaultBot ? StreamerSettings.StreamerBotRefreshToken : Singleton<GlobalSettings>.Instance.DefaultBotRefreshToken;
         }
         #endregion
 
@@ -79,10 +77,8 @@ namespace JeffBot
         #region EnsureAccessTokenAsync
         private async Task EnsureAccessTokenAsync()
         {
-            if (DateTime.Now >= _accessTokenExpiration)
-            {
-                await RefreshAccessTokenAsync();
-            }
+            var botTokenExpiration = !StreamerSettings.UseDefaultBot ? StreamerSettings.StreamerBotOauthTokenExpiration : Singleton<GlobalSettings>.Instance.DefaultBotOauthTokenExpiration;
+            if (DateTime.Now >= botTokenExpiration) await RefreshAccessTokenAsync();
         }
         #endregion
         #region UpdateTokenDetails
@@ -90,25 +86,29 @@ namespace JeffBot
         {
             TwitchApi.Settings.AccessToken = botToken.AccessToken;
             _refreshToken = botToken.RefreshToken;
-            _accessTokenExpiration = DateTime.Now.AddSeconds(botToken.ExpiresIn - 1800); // Subtract 30 minutes as a buffer
+            var accessTokenExpiration = DateTime.Now.AddSeconds(botToken.ExpiresIn - 1800); // Subtract 30 minutes as a buffer
 
             if (streamerToken != null)
             {
                 StreamerSettings.StreamerOauthToken = streamerToken.AccessToken;
                 StreamerSettings.StreamerRefreshToken = streamerToken.RefreshToken;
+                StreamerSettings.StreamerOauthTokenExpiration = accessTokenExpiration;
             }
 
             if (!StreamerSettings.UseDefaultBot)
             {
                 StreamerSettings.StreamerBotOauthToken = botToken.AccessToken;
                 StreamerSettings.StreamerBotRefreshToken = botToken.RefreshToken;
+                StreamerSettings.StreamerBotOauthTokenExpiration = accessTokenExpiration;
                 await AwsUtilities.DynamoDb.PopulateOrUpdateStreamerSettings(StreamerSettings);
             }
             else
             {
-                GlobalSettingsSingleton.Instance.DefaultBotOauthToken = botToken.AccessToken;
-                GlobalSettingsSingleton.Instance.DefaultBotRefreshToken = botToken.RefreshToken;
-                await AwsUtilities.DynamoDb.UpdateGlobalSettings(GlobalSettingsSingleton.Instance);
+                Singleton<GlobalSettings>.Instance.DefaultBotOauthToken = botToken.AccessToken;
+                Singleton<GlobalSettings>.Instance.DefaultBotRefreshToken = botToken.RefreshToken;
+                Singleton<GlobalSettings>.Instance.DefaultBotOauthTokenExpiration = accessTokenExpiration;
+                await AwsUtilities.DynamoDb.UpdateGlobalSettings(Singleton<GlobalSettings>.Instance);
+                await AwsUtilities.DynamoDb.PopulateOrUpdateStreamerSettings(StreamerSettings);
             }
         }
         #endregion

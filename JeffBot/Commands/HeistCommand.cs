@@ -205,7 +205,7 @@ namespace JeffBot
                 }
 
                 TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), await DistributePointsAndGenerateResultString());
-                if (HeistParticipants.Count(a => a.WonHeist is true) > 0 && HeistParticipants.Count(a => a.WonHeist is false) > 0)
+                if (HeistParticipants.Any(a => a.WonHeist is true) && HeistParticipants.Any(a => a.WonHeist is false))
                 {
                     TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), "This heist isn't over yet! Heist winners can !rez <UserName> for a chance to rez someone who did not make it out alive, sacrificing half of their winnings, but stopping the fallen from losing their bet. Failing to successful rez will result in a loss of winnings.");
                 }
@@ -374,7 +374,7 @@ namespace JeffBot
                 var points = winner.Points * 2;
                 if (HeistParticipants.Count >= 8)
                 {
-                    points = points * 2;
+                    points *= 2;
                 }
                 await StreamElementsClient.AddOrRemovePointsFromUser(winner.User.Username, points);
                 if (string.IsNullOrWhiteSpace(resultString))
@@ -383,7 +383,7 @@ namespace JeffBot
                 }
                 else
                 {
-                    resultString = resultString + $", {winner.User.DisplayName} ({points})";
+                    resultString += $", {winner.User.DisplayName} ({points})";
                 }
             }
 

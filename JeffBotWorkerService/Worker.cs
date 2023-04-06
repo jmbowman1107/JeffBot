@@ -45,7 +45,8 @@ namespace JeffBotWorkerService
             #endif
 
             var globalSettings = await JeffBot.AwsUtilities.DynamoDb.GetGlobalSettings(stoppingToken);
-            JeffBot.GlobalSettingsSingleton.Initialize(globalSettings);
+
+            Singleton<GlobalSettings>.Initialize(globalSettings);
             // TODO: Segment this if we ever need to have a lot of streamers..
             var streamerSettings = JeffBot.AwsUtilities.DynamoDb.DbContext.FromScanAsync<StreamerSettings>(new ScanOperationConfig());
             foreach (var streamer in await streamerSettings.GetRemainingAsync(stoppingToken))
@@ -56,8 +57,7 @@ namespace JeffBotWorkerService
                     continue;
                 }
                 _logger.LogInformation($"Starting bot {streamer.StreamerBotName} for streamer {streamer.StreamerName}");
-                var jeffBotLogger = _loggerFactory.CreateLogger<JeffBot.JeffBot>();
-                StreamerSettings[streamer.StreamerId] = (streamer, new JeffBot.JeffBot(streamer, jeffBotLogger));
+                StreamerSettings[streamer.StreamerId] = (streamer, new JeffBot.JeffBot(streamer, _loggerFactory.CreateLogger<JeffBot.JeffBot>()));
             }
 
             // For watching for changes to bot settings.
@@ -75,8 +75,8 @@ namespace JeffBotWorkerService
                 else
                 {
                     // TODO: When this scales beyond need of a single container, can we utilize a combination of an update (date time?) and System.Environment.MachineName to determine if a bot should be added?
-                    await LoadDynamoDbStreamShards(stoppingToken, shardIterators, dynamoDbStreamsClient, stream);
-                    await CheckForUpdatesAndUpdateStreamers(stoppingToken, shardIterators, dynamoDbStreamsClient, JeffBot.AwsUtilities.DynamoDb.DbContext);
+                    await LoadDynamoDbStreamShards(shardIterators, dynamoDbStreamsClient, stream, stoppingToken);
+                    await CheckForUpdatesAndUpdateStreamers(shardIterators, dynamoDbStreamsClient, JeffBot.AwsUtilities.DynamoDb.DbContext, stoppingToken);
                 }
                 await Task.Delay(1000, stoppingToken);
             }
@@ -84,7 +84,7 @@ namespace JeffBotWorkerService
         #endregion
 
         #region LoadDynamoDbStreamShards
-        private static async Task LoadDynamoDbStreamShards(CancellationToken stoppingToken, Dictionary<string, string> shardIterators, AmazonDynamoDBStreamsClient dynamoDbStreamsClient, StreamSummary stream)
+        private static async Task LoadDynamoDbStreamShards(Dictionary<string, string> shardIterators, AmazonDynamoDBStreamsClient dynamoDbStreamsClient, StreamSummary stream, CancellationToken stoppingToken = default)
         {
             if (shardIterators.Count == 0)
             {
@@ -103,7 +103,7 @@ namespace JeffBotWorkerService
         }
         #endregion
         #region CheckForUpdatesAndUpdateStreamers
-        private async Task CheckForUpdatesAndUpdateStreamers(CancellationToken stoppingToken, Dictionary<string, string> shardIterators, AmazonDynamoDBStreamsClient dynamoDbStreamsClient, DynamoDBContext dbContext)
+        private async Task CheckForUpdatesAndUpdateStreamers(Dictionary<string, string> shardIterators, AmazonDynamoDBStreamsClient dynamoDbStreamsClient, DynamoDBContext dbContext, CancellationToken stoppingToken = default)
         {
             foreach (var shardIterator in shardIterators)
             {
@@ -119,43 +119,73 @@ namespace JeffBotWorkerService
                 {
                     var streamerThatWasUpdated = update.Dynamodb.Keys["StreamerId"].S;
                     var newStreamerSettings = await dbContext.LoadAsync<StreamerSettings>(streamerThatWasUpdated, stoppingToken);
-                    if (!newStreamerSettings.IsActive)
+
+                    _logger.LogInformation($"Updated setting for streamer {newStreamerSettings.StreamerName}");
+                    var jeffBotLogger = _loggerFactory.CreateLogger<JeffBot.JeffBot>();
+                    if (StreamerSettings.ContainsKey(streamerThatWasUpdated))
                     {
-                        if (StreamerSettings.ContainsKey(streamerThatWasUpdated))
+                        if (ShouldRestartBot(StreamerSettings[streamerThatWasUpdated].StreamerSettings, newStreamerSettings))
                         {
-                            if (StreamerSettings[streamerThatWasUpdated].StreamerSettings.IsActive)
+                            StreamerSettings[streamerThatWasUpdated].JeffBot.ShutdownBotForStreamer();
+                            if (newStreamerSettings.IsActive)
                             {
-                                StreamerSettings[streamerThatWasUpdated].JeffBot.ShutdownBotForStreamer();
-                                StreamerSettings.Remove(streamerThatWasUpdated);
+                                StreamerSettings[streamerThatWasUpdated] = (newStreamerSettings, new JeffBot.JeffBot(newStreamerSettings, jeffBotLogger));
                             }
                         }
-                        // TODO: For now we just ignore non active bots..
-                        continue;
+                        else
+                        {
+                            // TODO: How to only update bot command settings, and not instantiate a new instance of a command? Or maybe just say fuck it?
+                            StreamerSettings[streamerThatWasUpdated] = (newStreamerSettings, StreamerSettings[streamerThatWasUpdated].JeffBot);
+                            StreamerSettings[streamerThatWasUpdated].JeffBot.StreamerSettings = newStreamerSettings;
+                            StreamerSettings[streamerThatWasUpdated].JeffBot.BotCommands = new List<IBotCommand>();
+                            StreamerSettings[streamerThatWasUpdated].JeffBot.InitializeBotCommands();
+                        }
                     }
-                    // TODO: For now just hardcode this, need to do this in a better way, and probably make it a property in some way..
-                    // Perhaps look at changes between the settings, if certain settings change, need to reboot, if not, it's fine
-                    _logger.LogInformation($"Updated setting for streamer {newStreamerSettings.StreamerName}");
-
-                    //var differencesInSettings = newStreamerSettings.DetailedCompare(StreamerSettings[streamerThatWasUpdated].StreamerSettings);
-                    //foreach (var difference in differencesInSettings)
-                    //{
-                    //    switch (difference.Prop)
-                    //    {
-
-                    //    }
-                    //}
-
-                    if (StreamerSettings[streamerThatWasUpdated].StreamerSettings.SpotifyRefreshToken != newStreamerSettings.SpotifyRefreshToken)
+                    else
                     {
-                        StreamerSettings[streamerThatWasUpdated].StreamerSettings.SpotifyRefreshToken = newStreamerSettings.SpotifyRefreshToken;
-                        continue;
+                        // TODO: When scaling work is done, don't automatically create it, determine if should be doing so.
+                        if (newStreamerSettings.IsActive)
+                        {
+                            StreamerSettings[streamerThatWasUpdated] = (newStreamerSettings, new JeffBot.JeffBot(newStreamerSettings, jeffBotLogger));
+                        }
                     }
-                    StreamerSettings[streamerThatWasUpdated].JeffBot.ShutdownBotForStreamer();
-                    var jeffBotLogger = _loggerFactory.CreateLogger<JeffBot.JeffBot>();
-                    StreamerSettings[streamerThatWasUpdated] = (newStreamerSettings, new JeffBot.JeffBot(newStreamerSettings, jeffBotLogger));
                 }
             }
         }
         #endregion
+
+        private bool ShouldRestartBot(StreamerSettings oldSettings, StreamerSettings newSettings)
+        {
+            // Check if any StreamerSettings property marked with the RequiresRestartAttribute has changed
+            if (oldSettings.HaveRebootRequiredPropertiesChanged(newSettings)) return true;
+
+            // Check for new BotFeatures
+            if (HaveNewBotFeatures(oldSettings.BotFeatures, newSettings.BotFeatures)) return true;
+
+            return false;
+        }
+
+        private bool HaveNewBotFeatures(List<BotCommandSettings> oldFeatures, List<BotCommandSettings> newFeatures)
+        {
+            var oldFeaturesDictionary = oldFeatures.ToDictionary(f => f.Id);
+            var newFeaturesDictionary = newFeatures.ToDictionary(f => f.Id);
+
+            var allFeatureNames = oldFeaturesDictionary.Keys.Concat(newFeaturesDictionary.Keys).Distinct();
+
+            foreach (var featureName in allFeatureNames)
+            {
+                if (oldFeaturesDictionary.TryGetValue(featureName, out var oldFeature)
+                    && newFeaturesDictionary.TryGetValue(featureName, out var newFeature))
+                {
+                    if (oldFeature.HaveRebootRequiredPropertiesChanged(newFeature)) return true;
+                }
+                else
+                {
+                    // If the feature is present in only one of the dictionaries, it's either added or removed
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

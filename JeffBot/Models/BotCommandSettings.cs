@@ -1,12 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Amazon.DynamoDBv2.DataModel;
 using JeffBot.AwsUtilities;
 using Newtonsoft.Json.Linq;
 
 namespace JeffBot
 {
-    public class BotCommandSettings : IBotCommandSettings
+    public class BotCommandSettings : BotSettingsBase, IBotCommandSettings
     {
+        #region Id
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        #endregion
         #region Name
         public string Name { get; set; }
         #endregion
@@ -42,7 +46,7 @@ namespace JeffBot
         #endregion
         #region CustomSettings
         [DynamoDBProperty(typeof(DataConverter))]
-        public dynamic CustomSettings { get; set; }
+        public object CustomSettings { get; set; }
         #endregion
 
         #region Constructor
@@ -66,6 +70,7 @@ namespace JeffBot
         #region Constructor
         public BotCommandSettings(BotCommandSettings botCommandSettings)
         {
+            Id = botCommandSettings.Id;
             Name = botCommandSettings.Name;
             Description = botCommandSettings.Description;
             Output = botCommandSettings.Output;
@@ -77,7 +82,7 @@ namespace JeffBot
             UserCooldown = botCommandSettings.UserCooldown;
             CommandAvailability = botCommandSettings.CommandAvailability;
             IsEnabled = botCommandSettings.IsEnabled;
-            CustomSettings = ((JObject)botCommandSettings.CustomSettings) == null ? new T() : ((JObject)botCommandSettings.CustomSettings).ToObject<T>();
+            CustomSettings = (JObject)botCommandSettings.CustomSettings == null ? new T() : ((JObject)botCommandSettings.CustomSettings).ToObject<T>();
         }
         #endregion
     }

@@ -67,7 +67,7 @@ namespace JeffBot
         private async void TwitchPubSubClient_OnFollow(object sender, TwitchLib.PubSub.Events.OnFollowArgs e)
         {
             if (e.Username.ToLower().Contains("hoss00312") || e.Username.ToLower().Contains("h0ss00312") || e.Username.Contains("idwt_"))
-                    await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId ?? Singleton<GlobalSettings>.Instance.DefaultBotId, new BanUserRequest { Reason = "We don't tolerate hate in this channel. Goodbye.", UserId = e.UserId }));
+                await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Moderation.BanUserAsync(StreamerSettings.StreamerId, StreamerSettings.StreamerBotId ?? Singleton<GlobalSettings>.Instance.DefaultBotId, new BanUserRequest { Reason = "We don't tolerate hate in this channel. Goodbye.", UserId = e.UserId }));
         }
         #endregion
     }

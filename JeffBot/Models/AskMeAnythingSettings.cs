@@ -21,7 +21,7 @@
         public bool ShouldReactToBits { get; set; }
         #endregion
         #region ShouldReactToRaids
-        public bool ShouldReactToRaids { get; set; } 
+        public bool ShouldReactToRaids { get; set; }
         #endregion
     }
 }

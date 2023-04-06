@@ -56,51 +56,6 @@ namespace JeffBot
             InitializeTwitchApi();
             InitializeChat();
             InitializePubSub();
-
-            foreach (var botFeature in StreamerSettings.BotFeatures)
-            {
-                try
-                {
-                    switch (botFeature.Name)
-                    {
-                        case nameof(BotFeatureName.BanHate):
-                            BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
-                            break;
-                        case nameof(BotFeatureName.Heist):
-                            BotCommands.Add(new HeistCommand(new BotCommandSettings<HeistCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
-                            break;
-                        case nameof(BotFeatureName.JeffRpg):
-                            BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
-                            break;
-                        case nameof(BotFeatureName.Clip):
-                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
-                            break;
-                        case nameof(BotFeatureName.AdvancedClip):
-                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
-                            break;
-                        case nameof(BotFeatureName.Mark):
-                            BotCommands.Add(new MarkCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
-                            break;
-                        case nameof(BotFeatureName.AskMeAnything):
-                            BotCommands.Add(new AskMeAnythingCommand(new BotCommandSettings<AskMeAnythingSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
-                            break;
-                        case nameof(BotFeatureName.SongManagement):
-                            BotCommands.Add(new SongManagementCommand(new BotCommandSettings<SongManagementCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
-                            break;
-                        case nameof(BotFeatureName.StreamManagement):
-                            BotCommands.Add(new StreamManagementCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
-                            break;
-                        default:
-                            BotCommands.Add(new GenericCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
-                            break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogInformation($"Failed to setup command for streamer: {StreamerSettings.StreamerName}");
-                    Logger.LogError(JsonConvert.SerializeObject(botFeature), ex);
-                }
-            }
             InitializeBotCommands();
         }
         #endregion
@@ -181,8 +136,53 @@ namespace JeffBot
         }
         #endregion
         #region InitializeBotCommands
-        private void InitializeBotCommands()
+        public void InitializeBotCommands()
         {
+            // TODO: Not sure if I want this to be the only way to reset bot features.. would be nice to only update ones that have changed..
+            foreach (var botFeature in StreamerSettings.BotFeatures)
+            {
+                try
+                {
+                    switch (botFeature.Name)
+                    {
+                        case nameof(BotFeatureName.BanHate):
+                            BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            break;
+                        case nameof(BotFeatureName.Heist):
+                            BotCommands.Add(new HeistCommand(new BotCommandSettings<HeistCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            break;
+                        case nameof(BotFeatureName.JeffRpg):
+                            BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            break;
+                        case nameof(BotFeatureName.Clip):
+                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            break;
+                        case nameof(BotFeatureName.AdvancedClip):
+                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            break;
+                        case nameof(BotFeatureName.Mark):
+                            BotCommands.Add(new MarkCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            break;
+                        case nameof(BotFeatureName.AskMeAnything):
+                            BotCommands.Add(new AskMeAnythingCommand(new BotCommandSettings<AskMeAnythingSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            break;
+                        case nameof(BotFeatureName.SongManagement):
+                            BotCommands.Add(new SongManagementCommand(new BotCommandSettings<SongManagementCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            break;
+                        case nameof(BotFeatureName.StreamManagement):
+                            BotCommands.Add(new StreamManagementCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            break;
+                        default:
+                            BotCommands.Add(new GenericCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogInformation($"Failed to setup command for streamer: {StreamerSettings.StreamerName}");
+                    Logger.LogError(JsonConvert.SerializeObject(botFeature), ex);
+                }
+            }
             BotCommands.ForEach(a => a.Initialize());
         }
         #endregion

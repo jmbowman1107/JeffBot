@@ -107,6 +107,7 @@ namespace JeffBot
                 }
                 else
                 {
+                    Logger.LogError(ex.ToString());
                     TwitchChatClient.SendMessage(chatMessage.Channel, "Stream was NOT successfully clipped.. Someone tell Jeff..");
                 }
             }
@@ -115,8 +116,8 @@ namespace JeffBot
         #region ValidateAndPostToNoobHuner
         private void ValidateAndPostToNoobHuner(ChatMessage chatMessage)
         {
-            string url = string.Empty;
-            KeyValuePair<string, (string url, DateTime dateTime)> recentClip = new KeyValuePair<string, (string url, DateTime dateTime)>("default user", (string.Empty, DateTime.Now));
+            var url = string.Empty;
+            var recentClip = new KeyValuePair<string, (string url, DateTime dateTime)>("default user", (string.Empty, DateTime.Now));
 
             if (MostRecentClips.TryGetValue(chatMessage.Username, out (string url, DateTime dateTime) clip))
             {
