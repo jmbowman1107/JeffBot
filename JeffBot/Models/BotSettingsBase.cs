@@ -5,6 +5,7 @@ namespace JeffBot
 {
     public class BotSettingsBase
     {
+        #region HaveRebootRequiredPropertiesChanged
         public bool HaveRebootRequiredPropertiesChanged(object newObject)
         {
             var objectType = this.GetType();
@@ -23,6 +24,7 @@ namespace JeffBot
                 }
             }
             return false;
-        }
+        } 
+        #endregion
     }
 }

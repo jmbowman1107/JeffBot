@@ -153,7 +153,7 @@ namespace JeffBotWorkerService
             }
         }
         #endregion
-
+        #region ShouldRestartBot
         private bool ShouldRestartBot(StreamerSettings oldSettings, StreamerSettings newSettings)
         {
             // Check if any StreamerSettings property marked with the RequiresRestartAttribute has changed
@@ -164,7 +164,8 @@ namespace JeffBotWorkerService
 
             return false;
         }
-
+        #endregion
+        #region HaveNewBotFeatures
         private bool HaveNewBotFeatures(List<BotCommandSettings> oldFeatures, List<BotCommandSettings> newFeatures)
         {
             var oldFeaturesDictionary = oldFeatures.ToDictionary(f => f.Id);
@@ -186,6 +187,7 @@ namespace JeffBotWorkerService
                 }
             }
             return false;
-        }
+        } 
+        #endregion
     }
 }
