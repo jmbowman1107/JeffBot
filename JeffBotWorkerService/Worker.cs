@@ -76,7 +76,7 @@ namespace JeffBotWorkerService
                 {
                     // TODO: When this scales beyond need of a single container, can we utilize a combination of an update (date time?) and System.Environment.MachineName to determine if a bot should be added?
                     await LoadDynamoDbStreamShards(shardIterators, dynamoDbStreamsClient, stream, stoppingToken);
-                    await CheckForUpdatesAndUpdateStreamers(shardIterators, dynamoDbStreamsClient, JeffBot.AwsUtilities.DynamoDb.DbContext, stoppingToken);
+                    await CheckForStreamerUpdatesAndUpdateStreamerSettings(shardIterators, dynamoDbStreamsClient, JeffBot.AwsUtilities.DynamoDb.DbContext, stoppingToken);
                 }
                 await Task.Delay(1000, stoppingToken);
             }
@@ -102,8 +102,8 @@ namespace JeffBotWorkerService
             }
         }
         #endregion
-        #region CheckForUpdatesAndUpdateStreamers
-        private async Task CheckForUpdatesAndUpdateStreamers(Dictionary<string, string> shardIterators, AmazonDynamoDBStreamsClient dynamoDbStreamsClient, DynamoDBContext dbContext, CancellationToken stoppingToken = default)
+        #region CheckForStreamerUpdatesAndUpdateStreamerSettings
+        private async Task CheckForStreamerUpdatesAndUpdateStreamerSettings(Dictionary<string, string> shardIterators, AmazonDynamoDBStreamsClient dynamoDbStreamsClient, DynamoDBContext dbContext, CancellationToken stoppingToken = default)
         {
             foreach (var shardIterator in shardIterators)
             {
@@ -156,13 +156,7 @@ namespace JeffBotWorkerService
         #region ShouldRestartBot
         private bool ShouldRestartBot(StreamerSettings oldSettings, StreamerSettings newSettings)
         {
-            // Check if any StreamerSettings property marked with the RequiresRestartAttribute has changed
-            if (oldSettings.HaveRebootRequiredPropertiesChanged(newSettings)) return true;
-
-            // Check for new BotFeatures
-            if (HaveNewBotFeatures(oldSettings.BotFeatures, newSettings.BotFeatures)) return true;
-
-            return false;
+            return oldSettings.HaveRebootRequiredPropertiesChanged(newSettings) || HaveNewBotFeatures(oldSettings.BotFeatures, newSettings.BotFeatures);
         }
         #endregion
         #region HaveNewBotFeatures
