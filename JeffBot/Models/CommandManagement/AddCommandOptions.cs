@@ -1,12 +1,12 @@
-﻿using CommandLine.Text;
-using CommandLine;
-using Newtonsoft.Json;
+﻿using CommandLine;
 
 namespace JeffBot
 {
     public class AddCommandOptions : CommandOptionsBase
     {
+        #region Output
         [Value(1, Required = true, HelpText = "Output text for the command.")]
-        public string Output { get; set; }
+        public string Output { get; set; } 
+        #endregion
     }
 }
