@@ -172,6 +172,9 @@ namespace JeffBot
                         case nameof(BotFeatureName.StreamManagement):
                             BotCommands.Add(new StreamManagementCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;
+                        case nameof(BotFeatureName.CommandsManagement):
+                            BotCommands.Add(new CommandsManagementCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            break;
                         default:
                             BotCommands.Add(new GenericCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
                             break;

@@ -11,7 +11,8 @@
         Mark,
         AskMeAnything,
         SongManagement,
-        StreamManagement
+        StreamManagement,
+        CommandsManagement
     }
     #endregion
 
