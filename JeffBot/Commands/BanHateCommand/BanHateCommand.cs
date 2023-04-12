@@ -2,16 +2,14 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using TwitchLib.Api.Helix.Models.Moderation.BanUser;
-using TwitchLib.Client;
 using TwitchLib.Client.Models;
-using TwitchLib.PubSub;
 
 namespace JeffBot
 {
     public class BanHateCommand : BotCommandBase
     {
         #region Constructor
-        public BanHateCommand(BotCommandSettings botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings, logger)
+        public BanHateCommand(BotCommandSettings botCommandSettings, JeffBot jeffBot) : base(botCommandSettings, jeffBot)
         {
             BotCommandSettings.GlobalCooldown = 0;
             BotCommandSettings.UserCooldown = 0;

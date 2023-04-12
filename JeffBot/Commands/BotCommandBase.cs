@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using TwitchLib.Client;
 using TwitchLib.Client.Exceptions;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
-using TwitchLib.PubSub;
 using TwitchLib.PubSub.Interfaces;
 
 namespace JeffBot
@@ -33,6 +31,10 @@ namespace JeffBot
             }
         }
         #endregion
+
+        #region JeffBot
+        public JeffBot JeffBot { get; set; } 
+        #endregion
         #region TwitchApiClient - IBotCommand Member
         public ManagedTwitchApi TwitchApiClient { get; set; }
         #endregion
@@ -47,14 +49,15 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        protected BotCommandBase(BotCommandSettings botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings, ILogger<JeffBot> logger)
+        protected BotCommandBase(BotCommandSettings botCommandSettings, JeffBot jeffBot)
         {
             BotCommandSettings = botCommandSettings;
-            TwitchApiClient = twitchApiClient;
-            TwitchChatClient = twitchChatClient;
-            TwitchPubSubClient = twitchPubSubClient;
-            StreamerSettings = streamerSettings;
-            Logger = logger;
+            JeffBot = jeffBot;
+            TwitchApiClient = jeffBot.TwitchApiClient;
+            TwitchChatClient = jeffBot.TwitchChatClient;
+            TwitchPubSubClient = jeffBot.TwitchPubSubClient;
+            StreamerSettings = jeffBot.StreamerSettings;
+            Logger = jeffBot.Logger;
             _lastExecuted = DateTimeOffset.MinValue;
             _usersLastExecuted = new Dictionary<string, DateTimeOffset>();
         }
@@ -199,7 +202,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        protected BotCommandBase(BotCommandSettings<T> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings, logger)
+        protected BotCommandBase(BotCommandSettings<T> botCommandSettings, JeffBot jeffBot) : base(botCommandSettings, jeffBot)
         {
             BotCommandSettings = botCommandSettings;
             BotCommandSettings.CustomSettings ??= new T();

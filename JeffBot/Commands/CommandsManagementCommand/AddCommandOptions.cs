@@ -6,7 +6,7 @@ namespace JeffBot
     {
         #region Output
         [Value(1, Required = true, HelpText = "Output text for the command.")]
-        public string Output { get; set; } 
+        public string Output { get; set; }
         #endregion
     }
 }

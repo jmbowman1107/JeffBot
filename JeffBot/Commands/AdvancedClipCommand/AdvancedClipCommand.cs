@@ -8,9 +8,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using TwitchLib.Api.Helix.Models.Clips.CreateClip;
-using TwitchLib.Client;
 using TwitchLib.Client.Models;
-using TwitchLib.PubSub;
 
 namespace JeffBot
 {
@@ -24,7 +22,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public AdvancedClipCommand(BotCommandSettings<AdvancedClipCommandSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings, logger)
+        public AdvancedClipCommand(BotCommandSettings<AdvancedClipCommandSettings> botCommandSettings, JeffBot jeffBot) : base(botCommandSettings, jeffBot)
         {
         }
         #endregion

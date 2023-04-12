@@ -4,16 +4,14 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using TwitchLib.Api.Helix.Models.Channels.ModifyChannelInformation;
-using TwitchLib.Client;
 using TwitchLib.Client.Models;
-using TwitchLib.PubSub;
 
 namespace JeffBot
 {
     internal class StreamManagementCommand : BotCommandBase
     {
         #region Constructor
-        public StreamManagementCommand(BotCommandSettings botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings, logger)
+        public StreamManagementCommand(BotCommandSettings botCommandSettings, JeffBot jeffBot) : base(botCommandSettings, jeffBot)
         {
         }
         #endregion

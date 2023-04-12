@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using TwitchLib.Api.Helix.Models.Streams.CreateStreamMarker;
-using TwitchLib.Client;
 using TwitchLib.Client.Models;
-using TwitchLib.PubSub;
 
 namespace JeffBot
 {
     public class MarkCommand : BotCommandBase
     {
         #region Constructor
-        public MarkCommand(BotCommandSettings botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings, logger)
+        public MarkCommand(BotCommandSettings botCommandSettings, JeffBot jeffBot) : base(botCommandSettings, jeffBot)
         {
         }
         #endregion

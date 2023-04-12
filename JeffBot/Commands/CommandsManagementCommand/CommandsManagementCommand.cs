@@ -3,17 +3,14 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommandLine;
-using Microsoft.Extensions.Logging;
-using TwitchLib.Client;
 using TwitchLib.Client.Models;
-using TwitchLib.PubSub;
 
 namespace JeffBot
 {
     public class CommandsManagementCommand : BotCommandBase
     {
         #region Constructor
-        public CommandsManagementCommand(BotCommandSettings botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings, logger)
+        public CommandsManagementCommand(BotCommandSettings botCommandSettings, JeffBot jeffBot) : base(botCommandSettings, jeffBot)
         { }
         #endregion
 
@@ -112,7 +109,7 @@ namespace JeffBot
             {
                 TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"!{commandTriggerWord} does not exist.");
             }
-        } 
+        }
         #endregion
         #region EditCommand
         private async Task EditCommand(ChatMessage chatMessage, ParserResult<EditCommandOptions> commandOptions)
@@ -144,13 +141,13 @@ namespace JeffBot
                 return;
             }
             TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"!{commandTriggerWord} does not exist.");
-        } 
+        }
         #endregion
 
         #region Initialize - Override
         public override void Initialize()
         {
-        } 
+        }
         #endregion
     }
-} 
+}

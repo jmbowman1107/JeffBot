@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -7,9 +8,7 @@ using Microsoft.Extensions.Logging;
 using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Models;
-using TwitchLib.Client;
 using TwitchLib.Client.Models;
-using TwitchLib.PubSub;
 
 namespace JeffBot
 {
@@ -23,7 +22,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public AskMeAnythingCommand(BotCommandSettings<AskMeAnythingSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings, logger)
+        public AskMeAnythingCommand(BotCommandSettings<AskMeAnythingSettings> botCommandSettings, JeffBot jeffBot) : base(botCommandSettings, jeffBot)
         { }
         #endregion
 
@@ -71,7 +70,7 @@ namespace JeffBot
             // React to first time message in chat
             if (BotCommandSettings.CustomSettings.ShouldReactToFirstTimeChatters && chatMessage.IsFirstMessage)
             {
-                await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim(), new List<string> { $"This is {chatMessage.DisplayName}'s first ever message in chat. Be welcoming and welcome them to the stream :)." });
+                await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim(), true, new List<string> { $"This is {chatMessage.DisplayName}'s first ever message in chat. Be welcoming and welcome them to the stream :)." });
                 return true;
             }
 
@@ -94,7 +93,7 @@ namespace JeffBot
                 TwitchChatClient.OnCommunitySubscription += async (sender, args) =>
                 {
                     await AskAnything(args.Channel, args.GiftedSubscription.DisplayName.ToLower(), args.GiftedSubscription.DisplayName, args.GiftedSubscription.SystemMsgParsed, 
-                        string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForCommunitySubscriptions) ? null : new (){ BotCommandSettings.CustomSettings.AdditionalPromptForCommunitySubscriptions});
+                        additionalPrompts: string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForCommunitySubscriptions) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForCommunitySubscriptions });
                 };
             }
 
@@ -103,13 +102,13 @@ namespace JeffBot
                 TwitchChatClient.OnNewSubscriber += async (sender, args) =>
                 {
                     await AskAnything(args.Channel, args.Subscriber.DisplayName.ToLower(), args.Subscriber.DisplayName, args.Subscriber.SystemMessageParsed,
-                        string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForUserSubscriptions) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForUserSubscriptions });
+                        additionalPrompts: string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForUserSubscriptions) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForUserSubscriptions });
                 };
 
                 TwitchChatClient.OnReSubscriber += async (sender, args) =>
                 {
                     await AskAnything(args.Channel, args.ReSubscriber.DisplayName.ToLower(), args.ReSubscriber.DisplayName, args.ReSubscriber.SystemMessageParsed,
-                        string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForUserSubscriptions) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForUserSubscriptions });
+                        additionalPrompts: string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForUserSubscriptions) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForUserSubscriptions });
                 };
             }
 
@@ -117,8 +116,8 @@ namespace JeffBot
             {
                 TwitchChatClient.OnRaidNotification += async (sender, args) =>
                 {
-                    await AskAnything(args.Channel, args.RaidNotification.DisplayName.ToLower(), args.RaidNotification.DisplayName, args.RaidNotification.SystemMsgParsed, 
-                        string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForRaid) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForRaid });
+                    await AskAnything(args.Channel, args.RaidNotification.DisplayName.ToLower(), args.RaidNotification.DisplayName, args.RaidNotification.SystemMsgParsed,
+                        additionalPrompts: string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForRaid) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForRaid });
                 };
             }
 
@@ -127,7 +126,7 @@ namespace JeffBot
                 TwitchPubSubClient.OnBitsReceived += async (sender, args) =>
                 {
                     await AskAnything(args.ChannelName, args.Username, args.Username, $"{args.Username} just gave {args.TotalBitsUsed} bits to {args.ChannelName}!",
-                        string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForBits) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForBits });
+                        additionalPrompts: string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForBits) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForBits });
                 };
             }
 
@@ -136,17 +135,25 @@ namespace JeffBot
                 TwitchPubSubClient.OnFollow += async (sender, args) =>
                 {
                     await AskAnything(StreamerSettings.StreamerName, args.Username, args.DisplayName, $"{args.DisplayName} just followed the stream! Thank them.",
-                        string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForFollows) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForFollows });
+                        additionalPrompts: string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForFollows) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForFollows });
                 };
             }
         }
         #endregion
 
         #region AskAnything
-        private async Task AskAnything(ChatMessage chatMessage, string whatToAsk, List<string> additionalPrompts = null)
+        public async Task<string> AskAnything(ChatMessage chatMessage, string whatToAsk, List<string> additionalPrompts = null)
         {
             additionalPrompts ??= new List<string>();
-            var chatPrompts = GenerateChatPromptsForUser(chatMessage.Username, chatMessage.DisplayName, whatToAsk, additionalPrompts);
+            var chatPrompts = GenerateChatPromptsForUser(chatMessage.Username, chatMessage.DisplayName, whatToAsk, false, additionalPrompts);
+            var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
+            var toReturn = result.FirstChoice.Message.Content.SplitToLines(500).FirstOrDefault();
+            return toReturn != null ? toReturn.Value : string.Empty;
+        }
+        private async Task AskAnything(ChatMessage chatMessage, string whatToAsk, bool useUserContext = true, List<string> additionalPrompts = null)
+        {
+            additionalPrompts ??= new List<string>();
+            var chatPrompts = GenerateChatPromptsForUser(chatMessage.Username, chatMessage.DisplayName, whatToAsk, useUserContext, additionalPrompts);
             var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
 
             Logger.LogInformation(result.FirstChoice.Message.Content);
@@ -157,10 +164,10 @@ namespace JeffBot
                 TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{match.Value}");
             }
         }
-        private async Task AskAnything(string channel, string username, string displayName, string whatToAsk, List<string> additionalPrompts = null)
+        private async Task AskAnything(string channel, string username, string displayName, string whatToAsk, bool useUserContext = true, List<string> additionalPrompts = null)
         {
             additionalPrompts ??= new List<string>();
-            var chatPrompts = GenerateChatPromptsForUser(username, displayName, whatToAsk, additionalPrompts);
+            var chatPrompts = GenerateChatPromptsForUser(username, displayName, whatToAsk, useUserContext, additionalPrompts);
             var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
 
             Logger.LogInformation(result.FirstChoice.Message.Content);
@@ -173,7 +180,7 @@ namespace JeffBot
         }
         #endregion
         #region GenerateChatPromptsForUser
-        private List<ChatPrompt> GenerateChatPromptsForUser(string userName, string displayName, string whatToAsk, List<string> additionalPrompts = null)
+        private List<ChatPrompt> GenerateChatPromptsForUser(string userName, string displayName, string whatToAsk, bool addToUserContext = true, List<string> additionalPrompts = null)
         {
             additionalPrompts ??= new List<string>();
             var chatPrompts = new List<ChatPrompt>
@@ -188,19 +195,21 @@ namespace JeffBot
 
             chatPrompts.AddRange(additionalPrompts.Select(prompt => new ChatPrompt("system", prompt)));
 
-            if (UsersContext.TryGetValue(userName, out LimitedQueue<(string prompt, string response)> value))
+            if (addToUserContext)
             {
-                foreach (var prompt in value)
+                if (UsersContext.TryGetValue(userName, out LimitedQueue<(string prompt, string response)> value))
                 {
-                    chatPrompts.Add(new ChatPrompt("user", prompt.prompt));
-                    chatPrompts.Add(new ChatPrompt("assistant", prompt.response));
+                    foreach (var prompt in value)
+                    {
+                        chatPrompts.Add(new ChatPrompt("user", prompt.prompt));
+                        chatPrompts.Add(new ChatPrompt("assistant", prompt.response));
+                    }
+                }
+                else
+                {
+                    UsersContext[userName] = new LimitedQueue<(string prompt, string response)>(5);
                 }
             }
-            else
-            {
-                UsersContext[userName] = new LimitedQueue<(string prompt, string response)>(5);
-            }
-
             chatPrompts.Add(new ChatPrompt("user", $"{whatToAsk}"));
             return chatPrompts;
         }

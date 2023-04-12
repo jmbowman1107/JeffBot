@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 using JeffBot.AwsUtilities;
 using Microsoft.Extensions.Logging;
 using SpotifyAPI.Web;
-using TwitchLib.Client;
 using TwitchLib.Client.Models;
-using TwitchLib.PubSub;
 
 namespace JeffBot
 {
@@ -18,7 +16,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public SongManagementCommand(BotCommandSettings<SongManagementCommandSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSubClient, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSubClient, streamerSettings, logger)
+        public SongManagementCommand(BotCommandSettings<SongManagementCommandSettings> botCommandSettings, JeffBot jeffBot) : base(botCommandSettings, jeffBot)
         { }
         #endregion
 
@@ -44,8 +42,8 @@ namespace JeffBot
                 return;
             }
             var authenticator = new AuthorizationCodeAuthenticator(
-                await AwsUtilities.SecretsManager.GetSecret("SPOTIFY_CLIENT_ID"),
-                await AwsUtilities.SecretsManager.GetSecret("SPOTIFY_CLIENT_SECRET"),
+                await SecretsManager.GetSecret("SPOTIFY_CLIENT_ID"),
+                await SecretsManager.GetSecret("SPOTIFY_CLIENT_SECRET"),
                 new AuthorizationCodeTokenResponse()
                 {
                     RefreshToken = StreamerSettings.SpotifyRefreshToken,

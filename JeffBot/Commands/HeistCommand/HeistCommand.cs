@@ -5,9 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using TwitchLib.Client;
 using TwitchLib.Client.Models;
-using TwitchLib.PubSub;
 
 namespace JeffBot
 {
@@ -38,7 +36,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public HeistCommand(BotCommandSettings<HeistCommandSettings> botCommandSettings, ManagedTwitchApi twitchApiClient, TwitchClient twitchChatClient, TwitchPubSub twitchPubSub, StreamerSettings streamerSettings, ILogger<JeffBot> logger) : base(botCommandSettings, twitchApiClient, twitchChatClient, twitchPubSub, streamerSettings, logger)
+        public HeistCommand(BotCommandSettings<HeistCommandSettings> botCommandSettings, JeffBot jeffBot) : base(botCommandSettings, jeffBot)
         {
             BotCommandSettings.GlobalCooldown = 0;
             BotCommandSettings.UserCooldown = 0;
@@ -55,7 +53,7 @@ namespace JeffBot
                 var number = Regex.Match(chatMessage.Message, @"\d+$");
                 if (number.Captures.Count > 0)
                 {
-                    await this.JoinHeist(chatMessage.DisplayName, false, Convert.ToInt32(number.Captures[0].Value));
+                    await JoinHeist(chatMessage.DisplayName, false, Convert.ToInt32(number.Captures[0].Value));
                 }
             }
             #endregion
@@ -109,7 +107,7 @@ namespace JeffBot
             if (string.IsNullOrEmpty(StreamerSettings.StreamElementsChannelId) || string.IsNullOrEmpty(StreamerSettings.StreamElementsChannelId))
             {
                 Logger.LogInformation("Disabled Heist Command, since no valid StreamElements credentials are here");
-                this.BotCommandSettings.IsEnabled = false;
+                BotCommandSettings.IsEnabled = false;
             }
             else
             {
@@ -263,14 +261,14 @@ namespace JeffBot
                 if (rnd.Next(1, 100) < BotCommandSettings.CustomSettings.ChanceToWinViewers)
                 {
                     TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), $"{rezzingUser} swooped in and sacrificed half of their heist winnings ({rezzingUserUser.Points / 2}) to bring back {rezzedUser} from the dead and recover their original bet ({rezzedUserUser.Points})!");
-                    await StreamElementsClient.AddOrRemovePointsFromUser(rezzingUserUser.User.Username, (rezzingUserUser.Points / 2) * -1);
+                    await StreamElementsClient.AddOrRemovePointsFromUser(rezzingUserUser.User.Username, rezzingUserUser.Points / 2 * -1);
                     await StreamElementsClient.AddOrRemovePointsFromUser(rezzedUserUser.User.Username, rezzedUserUser.Points);
                     rezzedUserUser.WasRezzed = true;
                 }
                 else
                 {
                     TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), $"{rezzingUser} got stunned while trying to rez {rezzedUser} and lost all there winnings({rezzingUserUser.Points})!");
-                    await StreamElementsClient.AddOrRemovePointsFromUser(rezzingUserUser.User.Username, (rezzingUserUser.Points) * -1);
+                    await StreamElementsClient.AddOrRemovePointsFromUser(rezzingUserUser.User.Username, rezzingUserUser.Points * -1);
                 }
                 rezzingUserUser.UsedRez = true;
             }
@@ -292,7 +290,7 @@ namespace JeffBot
                     TwitchChatClient.SendMessage(StreamerSettings.StreamerName.ToLower(), BotCommandSettings.CustomSettings.HeistResetMeMessage.Replace("{user}", user.DisplayName));
                     await StreamElementsClient.AddOrRemovePointsFromUser(me.User.Username, me.Points);
                     HeistParticipants.Remove(me);
-                    if (!HeistParticipants.Any()) await this.EndHeist(true);
+                    if (!HeistParticipants.Any()) await EndHeist(true);
                 }
                 return false;
             }

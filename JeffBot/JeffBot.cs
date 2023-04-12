@@ -19,20 +19,20 @@ namespace JeffBot
     public class JeffBot
     {
         #region ILogger
-        protected ILogger<JeffBot> Logger { get; set; }
+        public ILogger<JeffBot> Logger { get; set; }
         #endregion
 
         #region BotCommands
         public List<IBotCommand> BotCommands { get; set; } = new();
         #endregion
         #region ManagedTwitchApi
-        protected ManagedTwitchApi TwitchApi { get; set; }
+        public ManagedTwitchApi TwitchApiClient { get; set; }
         #endregion
         #region TwitchChatClient
-        protected TwitchClient TwitchChatClient { get; set; }
+        public TwitchClient TwitchChatClient { get; set; }
         #endregion
         #region TwitchPubSubClient
-        protected TwitchPubSub TwitchPubSubClient { get; set; }
+        public TwitchPubSub TwitchPubSubClient { get; set; }
         #endregion
         #region WebsocketClient
         protected WebSocketClient WebsocketClient { get; set; }
@@ -132,7 +132,7 @@ namespace JeffBot
         #region InitializeTwitchApi
         private async void InitializeTwitchApi()
         {
-            TwitchApi = new ManagedTwitchApi(await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_ID"), await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_SECRET"), StreamerSettings);
+            TwitchApiClient = new ManagedTwitchApi(await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_ID"), await AwsUtilities.SecretsManager.GetSecret("TWITCH_API_CLIENT_SECRET"), StreamerSettings);
         }
         #endregion
         #region InitializeBotCommands
@@ -146,37 +146,37 @@ namespace JeffBot
                     switch (botFeature.Name)
                     {
                         case nameof(BotFeatureName.BanHate):
-                            BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            BotCommands.Add(new BanHateCommand(botFeature, this));
                             break;
                         case nameof(BotFeatureName.Heist):
-                            BotCommands.Add(new HeistCommand(new BotCommandSettings<HeistCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            BotCommands.Add(new HeistCommand(new BotCommandSettings<HeistCommandSettings>(botFeature), this));
                             break;
                         case nameof(BotFeatureName.JeffRpg):
-                            BotCommands.Add(new BanHateCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            BotCommands.Add(new BanHateCommand(botFeature, this));
                             break;
                         case nameof(BotFeatureName.Clip):
-                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), this));
                             break;
                         case nameof(BotFeatureName.AdvancedClip):
-                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            BotCommands.Add(new AdvancedClipCommand(new BotCommandSettings<AdvancedClipCommandSettings>(botFeature), this));
                             break;
                         case nameof(BotFeatureName.Mark):
-                            BotCommands.Add(new MarkCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            BotCommands.Add(new MarkCommand(botFeature, this));
                             break;
                         case nameof(BotFeatureName.AskMeAnything):
-                            BotCommands.Add(new AskMeAnythingCommand(new BotCommandSettings<AskMeAnythingSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            BotCommands.Add(new AskMeAnythingCommand(new BotCommandSettings<AskMeAnythingSettings>(botFeature), this));
                             break;
                         case nameof(BotFeatureName.SongManagement):
-                            BotCommands.Add(new SongManagementCommand(new BotCommandSettings<SongManagementCommandSettings>(botFeature), TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            BotCommands.Add(new SongManagementCommand(new BotCommandSettings<SongManagementCommandSettings>(botFeature), this));
                             break;
                         case nameof(BotFeatureName.StreamManagement):
-                            BotCommands.Add(new StreamManagementCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            BotCommands.Add(new StreamManagementCommand(botFeature, this));
                             break;
                         case nameof(BotFeatureName.CommandsManagement):
-                            BotCommands.Add(new CommandsManagementCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            BotCommands.Add(new CommandsManagementCommand(botFeature, this));
                             break;
                         default:
-                            BotCommands.Add(new GenericCommand(botFeature, TwitchApi, TwitchChatClient, TwitchPubSubClient, StreamerSettings, Logger));
+                            BotCommands.Add(new GenericCommand(botFeature, this));
                             break;
                     }
                 }
@@ -228,7 +228,7 @@ namespace JeffBot
             {
                 try
                 {
-                    await TwitchApi.RefreshAccessTokenAsync();
+                    await TwitchApiClient.RefreshAccessTokenAsync();
                 }
                 catch (Exception)
                 {

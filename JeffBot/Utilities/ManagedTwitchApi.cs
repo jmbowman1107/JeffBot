@@ -15,7 +15,7 @@ namespace JeffBot
         #region StreamerSettings
         public StreamerSettings StreamerSettings { get; set; }
         #endregion
-        #region TwitchApi
+        #region TwitchApiClient
         public TwitchAPI TwitchApi { get; set; }
         #endregion
 
