@@ -56,6 +56,11 @@ namespace JeffBot
         {
             try
             {
+                if (!await IsStreamLive())
+                {
+                    TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"Cannot mark an offline stream.");
+                    return;
+                }
                 var mark = await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Streams.CreateStreamMarkerAsync(new CreateStreamMarkerRequest { Description = markMessage, UserId = StreamerSettings.StreamerId }));
                 if (markMessage != "Marked from bot.")
                 {

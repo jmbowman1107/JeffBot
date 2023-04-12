@@ -21,7 +21,7 @@ namespace JeffBot
         public override async Task<bool> ProcessMessage(ChatMessage chatMessage)
         {
             var message = chatMessage.Message;
-            var match = Regex.Match(message, @"^!commands\s+(\w+)\s?(.*)");
+            var match = Regex.Match(message, $@"^!{BotCommandSettings.TriggerWord}\s+(\w+)\s?(.*)");
 
             if (!match.Success) return false;
 
@@ -136,6 +136,10 @@ namespace JeffBot
                     if (commandOptions.Value.CommandAvailability.HasValue) existingBotFeature.CommandAvailability = commandOptions.Value.CommandAvailability.Value;
                     await AwsUtilities.DynamoDb.PopulateOrUpdateStreamerSettings(StreamerSettings);
                     TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"!{commandTriggerWord} command successfully edited.");
+                }
+                else
+                {
+                    TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"!{commandTriggerWord} cannot be edited.");
                 }
                 return;
             }
