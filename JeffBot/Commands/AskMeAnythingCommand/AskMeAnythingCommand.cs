@@ -55,7 +55,7 @@ namespace JeffBot
                 var questionOrText = Regex.Match(chatMessage.Message.ToLower(), @" .*$");
                 if (questionOrText.Captures.Count > 0)
                 {
-                    await AskAnything(chatMessage, questionOrText.Captures[0].Value.Trim());
+                    await AskAnything(chatMessage, questionOrText.Captures[0].Value.Trim(), true);
                     return true;
                 }
             }
@@ -63,7 +63,7 @@ namespace JeffBot
             var isTalkingToBot = Regex.Match(chatMessage.Message.ToLower(), @$"{StreamerSettings.StreamerBotName.ToLower()}");
             if (isTalkingToBot.Captures.Count > 0)
             {
-                await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim());
+                await AskAnything(chatMessage, chatMessage.Message.ToLower().Trim(), true);
                 return true;
             }
 

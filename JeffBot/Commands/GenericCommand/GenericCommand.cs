@@ -28,7 +28,7 @@ public class GenericCommand : BotCommandBase
         // TODO: We will need to take into account variables when generating output (e.g. users, counters, whatever else we want to be a dynamic feature)
         if (chatMessage.Message.StartsWith($"!{BotCommandSettings.TriggerWord}", StringComparison.InvariantCultureIgnoreCase))
         {
-            TwitchChatClient.SendMessage(chatMessage.Channel, await ProcessOutput());
+            TwitchChatClient.SendMessage(chatMessage.Channel, await ProcessOutput(chatMessage));
             return true;
         }
 
@@ -36,7 +36,7 @@ public class GenericCommand : BotCommandBase
         {
             if (chatMessage.Message.StartsWith($"!{additionalTriggerWord}", StringComparison.InvariantCultureIgnoreCase))
             {
-                TwitchChatClient.SendMessage(chatMessage.Channel, await ProcessOutput());
+                TwitchChatClient.SendMessage(chatMessage.Channel, await ProcessOutput(chatMessage));
                 return true;
             }
         }
@@ -61,7 +61,7 @@ public class GenericCommand : BotCommandBase
     #endregion
 
     #region ProcessOutput
-    public async Task<string> ProcessOutput()
+    public async Task<string> ProcessOutput(ChatMessage chatMessage)
     {
         // Define a pattern to match the {variablename: sometext} or {variablename} format
         var pattern = @"\{(\w+)(?:\s*:\s*([^{}]+))?\}";
@@ -96,7 +96,7 @@ public class GenericCommand : BotCommandBase
             else
             {
                 // Process the variable and replace the {} with the variable's output
-                var processedVariable = await commandOutputVariable.ProcessVariable(someText);
+                var processedVariable = await commandOutputVariable.ProcessVariable(someText, chatMessage);
                 processedOutput = processedOutput.Replace(match.Value, processedVariable);
             }
         }
