@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TwitchLib.Client.Models;
 
@@ -22,8 +23,17 @@ namespace JeffBot
 
         public override async Task<string> ProcessVariable(string command, ChatMessage chatMessage)
         {
-            string aiPrompt = string.Empty;
-            // TODO: For this command variable, the variable should be a quoted string, if it is not a quoted string, then just return and empty string
+            // Check if the input string is enclosed in quotes
+            var pattern = @"^""([^""]+)""$";
+            var match = Regex.Match(command, pattern);
+
+            if (!match.Success)
+            {
+                // If it is not a quoted string, then just return an empty string
+                return string.Empty;
+            }
+
+            var aiPrompt = match.Groups[1].Value;
 
             var askMeAnythingCommand = BotCommand.JeffBot.BotCommands.FirstOrDefault(a => a.BotCommandSettings.Name == nameof(AskMeAnythingCommand));
             if (askMeAnythingCommand != null)
@@ -32,12 +42,8 @@ namespace JeffBot
             }
             else
             {
-                var test = (AskMeAnythingCommand)askMeAnythingCommand;
-
-                await test.AskAnything(chatMessage, aiPrompt);
+                return await ((AskMeAnythingCommand)askMeAnythingCommand).AskAnything(chatMessage, aiPrompt);
             }
-
-            return string.Empty;;
 
             // TODO: Else invoke the AskMeAnythingCommand
         }
