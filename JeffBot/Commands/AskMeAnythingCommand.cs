@@ -93,7 +93,8 @@ namespace JeffBot
                 };
                 TwitchChatClient.OnCommunitySubscription += async (sender, args) =>
                 {
-                    await AskAnything(args.Channel, args.GiftedSubscription.DisplayName.ToLower(), args.GiftedSubscription.DisplayName, args.GiftedSubscription.SystemMsgParsed);
+                    await AskAnything(args.Channel, args.GiftedSubscription.DisplayName.ToLower(), args.GiftedSubscription.DisplayName, args.GiftedSubscription.SystemMsgParsed, 
+                        string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForCommunitySubscriptions) ? null : new (){ BotCommandSettings.CustomSettings.AdditionalPromptForCommunitySubscriptions});
                 };
             }
 
@@ -101,12 +102,14 @@ namespace JeffBot
             {
                 TwitchChatClient.OnNewSubscriber += async (sender, args) =>
                 {
-                    await AskAnything(args.Channel, args.Subscriber.DisplayName.ToLower(), args.Subscriber.DisplayName, args.Subscriber.SystemMessageParsed);
+                    await AskAnything(args.Channel, args.Subscriber.DisplayName.ToLower(), args.Subscriber.DisplayName, args.Subscriber.SystemMessageParsed,
+                        string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForUserSubscriptions) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForUserSubscriptions });
                 };
 
                 TwitchChatClient.OnReSubscriber += async (sender, args) =>
                 {
-                    await AskAnything(args.Channel, args.ReSubscriber.DisplayName.ToLower(), args.ReSubscriber.DisplayName, args.ReSubscriber.SystemMessageParsed);
+                    await AskAnything(args.Channel, args.ReSubscriber.DisplayName.ToLower(), args.ReSubscriber.DisplayName, args.ReSubscriber.SystemMessageParsed,
+                        string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForUserSubscriptions) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForUserSubscriptions });
                 };
             }
 
@@ -114,7 +117,8 @@ namespace JeffBot
             {
                 TwitchChatClient.OnRaidNotification += async (sender, args) =>
                 {
-                    await AskAnything(args.Channel, args.RaidNotification.DisplayName.ToLower(), args.RaidNotification.DisplayName, args.RaidNotification.SystemMsgParsed);
+                    await AskAnything(args.Channel, args.RaidNotification.DisplayName.ToLower(), args.RaidNotification.DisplayName, args.RaidNotification.SystemMsgParsed, 
+                        string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForRaid) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForRaid });
                 };
             }
 
@@ -122,7 +126,8 @@ namespace JeffBot
             {
                 TwitchPubSubClient.OnBitsReceived += async (sender, args) =>
                 {
-                    await AskAnything(args.ChannelName, args.Username, args.Username, $"{args.Username} just gave {args.TotalBitsUsed} bits to {args.ChannelName}!");
+                    await AskAnything(args.ChannelName, args.Username, args.Username, $"{args.Username} just gave {args.TotalBitsUsed} bits to {args.ChannelName}!",
+                        string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForBits) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForBits });
                 };
             }
 
@@ -130,7 +135,8 @@ namespace JeffBot
             {
                 TwitchPubSubClient.OnFollow += async (sender, args) =>
                 {
-                    await AskAnything(StreamerSettings.StreamerName, args.Username, args.DisplayName, $"{args.DisplayName} just followed the stream! Thank them.");
+                    await AskAnything(StreamerSettings.StreamerName, args.Username, args.DisplayName, $"{args.DisplayName} just followed the stream! Thank them.",
+                        string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalPromptForFollows) ? null : new() { BotCommandSettings.CustomSettings.AdditionalPromptForFollows });
                 };
             }
         }
