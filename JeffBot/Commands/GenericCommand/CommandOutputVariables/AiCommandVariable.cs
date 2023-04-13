@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TwitchLib.Client.Models;
 
@@ -13,6 +12,9 @@ namespace JeffBot
         #region Description - Override
         public override string Description { get; set; } = "Use this variable to have the AI generate text based on an output";
         #endregion
+        #region UsageExample - Override
+        public override string UsageExample { get; set; } = "{ ai: tell me a random dad joke }";
+        #endregion
 
         #region Constructor
         public AiCommandVariable(BotCommandBase botCommand) : base(botCommand)
@@ -21,31 +23,21 @@ namespace JeffBot
 
         #endregion
 
+        #region ProcessVariable - Override
         public override async Task<string> ProcessVariable(string command, ChatMessage chatMessage)
         {
-            // Check if the input string is enclosed in quotes
-            var pattern = @"^""([^""]+)""$";
-            var match = Regex.Match(command, pattern);
+            var askMeAnythingCommand = BotCommand.JeffBot.BotCommands.FirstOrDefault(a => a is AskMeAnythingCommand);
+            if (askMeAnythingCommand == null) return string.Empty;
 
-            if (!match.Success)
+            try
             {
-                // If it is not a quoted string, then just return an empty string
-                return string.Empty;
+                return await ((AskMeAnythingCommand)askMeAnythingCommand).AskAnything(chatMessage, command);
             }
-
-            var aiPrompt = match.Groups[1].Value;
-
-            var askMeAnythingCommand = BotCommand.JeffBot.BotCommands.FirstOrDefault(a => a.BotCommandSettings.Name == nameof(AskMeAnythingCommand));
-            if (askMeAnythingCommand != null)
+            catch
             {
                 return string.Empty;
             }
-            else
-            {
-                return await ((AskMeAnythingCommand)askMeAnythingCommand).AskAnything(chatMessage, aiPrompt);
-            }
-
-            // TODO: Else invoke the AskMeAnythingCommand
-        }
+        } 
+        #endregion
     }
 }

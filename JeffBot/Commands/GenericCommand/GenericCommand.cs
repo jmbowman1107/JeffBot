@@ -64,7 +64,7 @@ public class GenericCommand : BotCommandBase
     public async Task<string> ProcessOutput(ChatMessage chatMessage)
     {
         // Define a pattern to match the {variablename: sometext} or {variablename} format
-        var pattern = @"\{(\w+)(?:\s*:\s*([^{}]+))?\}";
+        var pattern = @"\{\s*(\w+)\s*:\s*([\s\S]*?)\s*\}";
 
         // Create a local variable to store the processed output
         var processedOutput = BotCommandSettings.Output;

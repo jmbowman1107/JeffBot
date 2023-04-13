@@ -15,6 +15,9 @@ namespace JeffBot
         #region Description - Abstract
         public abstract string Description { get; set; }
         #endregion
+        #region UsageExample - Abstract
+        public abstract string UsageExample { get; set; }
+        #endregion
 
         #region Constructor
         protected CommandOutputVariableBase(BotCommandBase botCommand)
