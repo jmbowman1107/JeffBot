@@ -3,7 +3,7 @@ using TwitchLib.Client.Models;
 
 namespace JeffBot
 {
-    public class UserCommandVariable : CommandOutputVariableBase
+    public class UserCommandVariable : CommandVariableBase
     {
         #region Keyword - Override
         public override string Keyword { get; set; } = "user";

@@ -13,19 +13,19 @@ public class GenericCommand : BotCommandBase
 {
     #region CommandOutputVariables
 
-    private List<ICommandOutputVariable> _commandOutputVariables;
+    private List<ICommandVariable> _commandOutputVariables;
 
-    public List<ICommandOutputVariable> CommandOutputVariables
+    public List<ICommandVariable> CommandOutputVariables
     {
         get
         {
             if (_commandOutputVariables == null)
             {
                 var assembly = Assembly.GetExecutingAssembly();
-                var types = assembly.GetTypes().Where(t => typeof(ICommandOutputVariable).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface).ToList();
+                var types = assembly.GetTypes().Where(t => typeof(ICommandVariable).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface).ToList();
                 try
                 {
-                    _commandOutputVariables = types.Select(t => (ICommandOutputVariable)Activator.CreateInstance(t, this)).ToList();
+                    _commandOutputVariables = types.Select(t => (ICommandVariable)Activator.CreateInstance(t, this)).ToList();
                 }
                 catch (Exception ex)
                 {
@@ -102,7 +102,7 @@ public class GenericCommand : BotCommandBase
             var someText = match.Groups[2].Value;
 
             // Find the ICommandOutputVariable that matches the output variable name
-            ICommandOutputVariable commandOutputVariable = null;
+            ICommandVariable commandOutputVariable = null;
             foreach (var outputVariable in CommandOutputVariables)
             {
                 if (outputVariable.Keyword != outputVariableName) continue;

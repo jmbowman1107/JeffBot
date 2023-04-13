@@ -3,7 +3,7 @@ using TwitchLib.Client.Models;
 
 namespace JeffBot
 {
-    public interface ICommandOutputVariable
+    public interface ICommandVariable
     {
         #region Keyword
         public string Keyword { get; set; }

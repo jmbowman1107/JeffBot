@@ -4,7 +4,7 @@ using TwitchLib.Client.Models;
 
 namespace JeffBot
 {
-    public class AiCommandVariable : CommandOutputVariableBase
+    public class AiCommandVariable : CommandVariableBase
     {
         #region Keyword - Override
         public override string Keyword { get; set; } = "ai";

@@ -3,7 +3,7 @@ using TwitchLib.Client.Models;
 
 namespace JeffBot
 {
-    public abstract class CommandOutputVariableBase : ICommandOutputVariable
+    public abstract class CommandVariableBase : ICommandVariable
     {
         #region BotCommand
         public BotCommandBase BotCommand { get; set; }
@@ -20,7 +20,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        protected CommandOutputVariableBase(BotCommandBase botCommand)
+        protected CommandVariableBase(BotCommandBase botCommand)
         {
             BotCommand = botCommand;
         }
