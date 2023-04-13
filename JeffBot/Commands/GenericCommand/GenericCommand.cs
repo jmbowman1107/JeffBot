@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using TwitchLib.Client.Models;
 
 namespace JeffBot;
@@ -9,16 +12,35 @@ namespace JeffBot;
 public class GenericCommand : BotCommandBase
 {
     #region CommandOutputVariables
-    public List<ICommandOutputVariable> CommandOutputVariables { get; set; }
+
+    private List<ICommandOutputVariable> _commandOutputVariables;
+
+    public List<ICommandOutputVariable> CommandOutputVariables
+    {
+        get
+        {
+            if (_commandOutputVariables == null)
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var types = assembly.GetTypes().Where(t => typeof(ICommandOutputVariable).IsAssignableFrom(t) && !t.IsAbstract && !t.IsInterface).ToList();
+                try
+                {
+                    _commandOutputVariables = types.Select(t => (ICommandOutputVariable)Activator.CreateInstance(t, this)).ToList();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Error instantiating command variable types.", ex);
+                }
+            }
+            return _commandOutputVariables;
+        }
+        set => _commandOutputVariables = value;
+    }
     #endregion
 
     #region Constructor
     public GenericCommand(BotCommandSettings botCommandSettings, JeffBot jeffBot) : base(botCommandSettings, jeffBot)
     {
-        CommandOutputVariables = new List<ICommandOutputVariable>
-        {
-            new AiCommandVariable(this)
-        };
     }
     #endregion
 
