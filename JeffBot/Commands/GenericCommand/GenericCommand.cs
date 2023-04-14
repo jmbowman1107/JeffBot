@@ -122,7 +122,8 @@ public class GenericCommand : BotCommandBase
                 processedOutput = processedOutput.Replace(match.Value, processedVariable);
             }
         }
-        return processedOutput;
+
+        return processedOutput.Length > 500 ? processedOutput[..500] : processedOutput;
     }
     #endregion
 }
