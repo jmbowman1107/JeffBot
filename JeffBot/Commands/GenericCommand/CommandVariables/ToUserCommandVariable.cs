@@ -17,7 +17,7 @@ namespace JeffBot
         #endregion
 
         #region Constructor
-        public UserCommandVariable(BotCommandBase botCommand) : base(botCommand)
+        public ToUserCommandVariable(BotCommandBase botCommand) : base(botCommand)
         {
         }
         #endregion
