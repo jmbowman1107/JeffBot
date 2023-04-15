@@ -17,7 +17,7 @@
         <li>!title {title} to change title of stream. - Mods Only</li>
         <li>!games {game} to change game of stream. - Mods Only</li>
         <li>!tags add/remove {tag} to add or remove a tag to the stream. - Mods Only</li>
-        <li>!commands add/remove/edit for custom commands, there are custom command variables that can be used in custom commands as below</li>
+        <li>!commands add/remove/edit/raw for custom commands, there are custom command variables that can be used in custom commands as below ('raw' gets the raw output including the command variables, in case mods need to make edits to complex commands}</li>
         <ul>
             <li>{user} - Use this variable to show the user who activated the command.</li>
             <li>{touser} - Use this variable to show the user who is mentioned right after the command, or if there is none, then return the name of the sender</li>
@@ -25,7 +25,8 @@
                 Example: {ai: tell me a random dad joke}</li>
             <li>{httpget: https://some.url/here/that/returns/text} - Use this to send a get request to a URL, will return the text response if successful, else will return an error.</li>
             <li>{httpget:somejsontokenpath:https://some.url/here/that/returns/text} - Use this to send a get request to a URL, will return the text response if successful, else will return an error. <br/>
-                Example: {httpget:value:https://api.chucknorris.io/jokes/random} with send a HTTP GET request to https://api.chucknorris.io/jokes/random and parse the response for the 'value' property</li>
+                Example: {httpget:jokes[0].value:https://api.chucknorris.io/jokes/random} with send a HTTP GET request to https://api.chucknorris.io/jokes/random and parse the response for the 'jokes[0].value' property
+            </li>
         </ul>
     </ul>
     <h2>Future Features</h2>
