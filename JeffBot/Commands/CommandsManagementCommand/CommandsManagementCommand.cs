@@ -41,6 +41,10 @@ namespace JeffBot
                     var editOptions = Parser.Default.ParseArguments<EditCommandOptions>(args);
                     await EditCommand(chatMessage, editOptions);
                     break;
+                case "raw":
+                    var rawOptions = Parser.Default.ParseArguments<RemoveCommandOptions>(args);
+                    GetRawCommandOutput(chatMessage, rawOptions);
+                    break;
                 default:
                     return false;
             }
@@ -141,6 +145,31 @@ namespace JeffBot
                 return;
             }
             TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"!{commandTriggerWord} does not exist.");
+        }
+        #endregion
+        #region GetRawCommandOutput
+        private void GetRawCommandOutput(ChatMessage chatMessage, ParserResult<RemoveCommandOptions> commandOptions)
+        {
+            if (commandOptions.Errors.Any())
+            {
+                TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{string.Join(',', commandOptions.Errors)}");
+                return;
+            }
+
+            var commandTriggerWord = commandOptions.Value.TriggerWord.StartsWith("!") ? commandOptions.Value.TriggerWord.Replace("!", string.Empty) : commandOptions.Value.TriggerWord;
+
+            if (StreamerSettings.BotFeatures.Any(x => x.TriggerWord.Equals(commandTriggerWord, StringComparison.OrdinalIgnoreCase)))
+            {
+                var existingBotFeature = StreamerSettings.BotFeatures.FirstOrDefault(x => x.TriggerWord.Equals(commandTriggerWord, StringComparison.OrdinalIgnoreCase));
+                if (existingBotFeature is { Name: nameof(GenericCommand) })
+                {
+                    TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"\"{existingBotFeature.Output}\"");
+                }
+            }
+            else
+            {
+                TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"!{commandTriggerWord} does not exist.");
+            }
         }
         #endregion
 

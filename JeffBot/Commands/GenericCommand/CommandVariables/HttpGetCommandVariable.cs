@@ -11,7 +11,7 @@ namespace JeffBot
 {
     public class HttpGetCommandVariable : CommandVariableBase
     {
-        private static readonly HttpClient httpClient = new HttpClient();
+        private static readonly HttpClient HttpClient = new();
 
         #region Keyword - Override
         public override string Keyword { get; set; } = "httpget";
@@ -68,7 +68,7 @@ namespace JeffBot
         #region FetchData
         private async Task<string> FetchData(string url)
         {
-            return await httpClient.GetStringAsync(new Uri(url));
+            return await HttpClient.GetStringAsync(new Uri(url));
         }
         #endregion
         #region ExtractJsonTokenValue
