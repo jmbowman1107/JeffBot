@@ -12,7 +12,7 @@ namespace JeffBot
         public override string Keyword { get; set; } = "httpget";
         #endregion
         #region Description - Override
-        public override string Description { get; set; } = "Use this to send a get request to a URL, will return string (first 100 characters) if string, else will return an error.";
+        public override string Description { get; set; } = "Use this to send a get request to a URL, will return the text response if successful, else will return an error.";
         #endregion
         #region UsageExample - Override
         public override string UsageExample { get; set; } = "{ httpget:https://api.jeffbot.com/samplehttpget }";

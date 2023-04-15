@@ -10,7 +10,7 @@ namespace JeffBot
         public override string Keyword { get; set; } = "touser";
         #endregion
         #region Description - Override
-        public override string Description { get; set; } = "Use this variable to show the user who is mentioned in this command, or if there is none, then return the name of the sender.";
+        public override string Description { get; set; } = "Use this variable to show the user who is mentioned right after the command, or if there is none, then return the name of the sender.";
         #endregion
         #region UsageExample - Override
         public override string UsageExample { get; set; } = "{ touser }";

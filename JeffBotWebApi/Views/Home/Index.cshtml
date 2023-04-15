@@ -17,12 +17,19 @@
         <li>!title {title} to change title of stream. - Mods Only</li>
         <li>!games {game} to change game of stream. - Mods Only</li>
         <li>!tags add/remove {tag} to add or remove a tag to the stream. - Mods Only</li>
+        <li>!commands add/remove/edit for custom commands, there are custom command variables that can be used in custom commands as below</li>
+        <ul>
+            <li>{user} - Use this variable to show the user who activated the command.</li>
+            <li>{touser} - Use this variable to show the user who is mentioned right after the command, or if there is none, then return the name of the sender</li>
+            <li>{ai: some text to feed the ai} - Use this variable to have the AI generate text based on an input. <br/>
+                Example: {ai: tell me a random dad joke}</li>
+            <li>{httpget: https://some.url/here/that/returns/text} - Use this to send a get request to a URL, will return the text response if successful, else will return an error.</li>
+        </ul>
     </ul>
     <h2>Future Features</h2>
     <ul>
         <li>A dashboard for anyone to sign up</li>
         <li>!rpg a custom RPG for chat to play</li>
-        <li>!command ability for custom commands</li>
         <li>Command use analytics</li>
         <li>Chatter analytics</li>
         <li>Stream points system</li>

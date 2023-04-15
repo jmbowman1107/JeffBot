@@ -10,7 +10,7 @@ namespace JeffBot
         public override string Keyword { get; set; } = "ai";
         #endregion
         #region Description - Override
-        public override string Description { get; set; } = "Use this variable to have the AI generate text based on an output";
+        public override string Description { get; set; } = "Use this variable to have the AI generate text based on an input.";
         #endregion
         #region UsageExample - Override
         public override string UsageExample { get; set; } = "{ ai: tell me a random dad joke }";

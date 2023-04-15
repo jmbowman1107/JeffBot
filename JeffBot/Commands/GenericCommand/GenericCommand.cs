@@ -102,13 +102,7 @@ public class GenericCommand : BotCommandBase
             var someText = match.Groups[2].Value;
 
             // Find the ICommandOutputVariable that matches the output variable name
-            ICommandVariable commandOutputVariable = null;
-            foreach (var outputVariable in CommandOutputVariables)
-            {
-                if (outputVariable.Keyword != outputVariableName) continue;
-                commandOutputVariable = outputVariable;
-                break;
-            }
+            var commandOutputVariable = CommandOutputVariables.FirstOrDefault(outputVariable => outputVariable.Keyword == outputVariableName);
 
             if (commandOutputVariable == null)
             {
