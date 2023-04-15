@@ -24,6 +24,8 @@
             <li>{ai: some text to feed the ai} - Use this variable to have the AI generate text based on an input. <br/>
                 Example: {ai: tell me a random dad joke}</li>
             <li>{httpget: https://some.url/here/that/returns/text} - Use this to send a get request to a URL, will return the text response if successful, else will return an error.</li>
+            <li>{httpget:somejsontokenpath:https://some.url/here/that/returns/text} - Use this to send a get request to a URL, will return the text response if successful, else will return an error. <br/>
+                Example: {httpget:value:https://api.chucknorris.io/jokes/random} with send a HTTP GET request to https://api.chucknorris.io/jokes/random and parse the response for the 'value' property</li>
         </ul>
     </ul>
     <h2>Future Features</h2>
