@@ -25,7 +25,9 @@ namespace JeffBot
             if (chatMessage.IsFirstMessage && (chatMessage.Message.ToLower().Contains("buy followers") ||
                                                chatMessage.Message.ToLower().Contains(" followers") ||
                                                chatMessage.Message.ToLower().Contains(" viewers") ||
-                                               chatMessage.Message.ToLower().Contains(" views")))
+                                               chatMessage.Message.ToLower().Contains(" views") ||
+                                               chatMessage.Message.ToLower().Contains(" selling") ||
+                                               chatMessage.Message.ToLower().Contains(" telegram")))
             {
                 var test = await TwitchApiClient.ExecuteRequest(async api => await api.Helix.Users.GetUsersFollowsAsync(fromId: chatMessage.UserId, toId: StreamerSettings.StreamerId));
                 if (test.Follows != null && !test.Follows.Any())

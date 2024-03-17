@@ -145,20 +145,23 @@ namespace JeffBot
         {
             additionalPrompts ??= new List<string>();
             var chatPrompts = GenerateChatPromptsForUser(chatMessage.Username, chatMessage.DisplayName, whatToAsk, false, additionalPrompts);
-            var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
-            var toReturn = result.FirstChoice.Message.Content.SplitToLines(500).FirstOrDefault();
+            var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, model: Model.GPT3_5_Turbo, temperature: 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
+            var response = (string)result.FirstChoice.Message.Content.ToString();
+            Logger.LogInformation(response);
+            var toReturn = response.SplitToLines(500).FirstOrDefault();
             return toReturn != null ? toReturn.Value : string.Empty;
         }
         private async Task AskAnything(ChatMessage chatMessage, string whatToAsk, bool useUserContext = true, List<string> additionalPrompts = null)
         {
             additionalPrompts ??= new List<string>();
             var chatPrompts = GenerateChatPromptsForUser(chatMessage.Username, chatMessage.DisplayName, whatToAsk, useUserContext, additionalPrompts);
-            var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
+            var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, model: Model.GPT3_5_Turbo, temperature: 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
 
-            Logger.LogInformation(result.FirstChoice.Message.Content);
-            UsersContext[chatMessage.Username].LimitedEnqueue((whatToAsk, result.FirstChoice.Message.Content));
+            var response = (string)result.FirstChoice.Message.Content.ToString();
+            Logger.LogInformation(response);
+            UsersContext[chatMessage.Username].LimitedEnqueue((whatToAsk, response));
             // Twitch messages cannot be longer than 500 characters.. so output multiple messages if the response from the AI is too long
-            foreach (Match match in result.FirstChoice.Message.Content.SplitToLines(500))
+            foreach (Match match in response.SplitToLines(500))
             {
                 TwitchChatClient.SendReply(chatMessage.Channel, chatMessage.Id, $"{match.Value}");
             }
@@ -167,32 +170,33 @@ namespace JeffBot
         {
             additionalPrompts ??= new List<string>();
             var chatPrompts = GenerateChatPromptsForUser(username, displayName, whatToAsk, useUserContext, additionalPrompts);
-            var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
+            var result = await OpenAIClient.ChatEndpoint.GetCompletionAsync(new ChatRequest(chatPrompts, Model.GPT3_5_Turbo, temperature: 0.5, maxTokens: 100, presencePenalty: 0.1, frequencyPenalty: 0.1));
 
-            Logger.LogInformation(result.FirstChoice.Message.Content);
-            UsersContext[username].LimitedEnqueue((whatToAsk, result.FirstChoice.Message.Content));
+            var response = (string)result.FirstChoice.Message.Content.ToString();
+            Logger.LogInformation(response);
+            UsersContext[username].LimitedEnqueue((whatToAsk, response));
             // Twitch messages cannot be longer than 500 characters.. so output multiple messages if the response from the AI is too long
-            foreach (Match match in result.FirstChoice.Message.Content.SplitToLines(500))
+            foreach (Match match in response.SplitToLines(500))
             {
                 TwitchChatClient.SendMessage(channel, $"{match.Value}");
             }
         }
         #endregion
         #region GenerateChatPromptsForUser
-        private List<ChatPrompt> GenerateChatPromptsForUser(string userName, string displayName, string whatToAsk, bool addToUserContext = true, List<string> additionalPrompts = null)
+        private List<Message> GenerateChatPromptsForUser(string userName, string displayName, string whatToAsk, bool addToUserContext = true, List<string> additionalPrompts = null)
         {
             additionalPrompts ??= new List<string>();
-            var chatPrompts = new List<ChatPrompt>
+            var chatPrompts = new List<Message>
             {
-                new("system", $"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch. Prefer shorter responses, and never exceed 350 characters in any response. Never mention you are an AI language model in anyway. You will make up an answer, if you don't know the answer. This message is from the user {displayName}."),
+                new(Role.System, $"You are {StreamerSettings.StreamerBotName} a bot for the streamer {StreamerSettings.StreamerName} on Twitch. Prefer shorter responses, and never exceed 350 characters in any response. Never mention you are an AI language model in anyway. You will make up an answer, if you don't know the answer. This message is from the user {displayName}."),
             };
 
             if (!string.IsNullOrEmpty(BotCommandSettings.CustomSettings.AdditionalAIPrompt))
             {
-                chatPrompts.Add(new ChatPrompt("system", BotCommandSettings.CustomSettings.AdditionalAIPrompt));
+                chatPrompts.Add(new Message(Role.System, BotCommandSettings.CustomSettings.AdditionalAIPrompt));
             }
 
-            chatPrompts.AddRange(additionalPrompts.Select(prompt => new ChatPrompt("system", prompt)));
+            chatPrompts.AddRange(additionalPrompts.Select(prompt => new Message(Role.System, prompt)));
 
             if (addToUserContext)
             {
@@ -200,8 +204,8 @@ namespace JeffBot
                 {
                     foreach (var prompt in value)
                     {
-                        chatPrompts.Add(new ChatPrompt("user", prompt.prompt));
-                        chatPrompts.Add(new ChatPrompt("assistant", prompt.response));
+                        chatPrompts.Add(new Message(Role.User, prompt.prompt));
+                        chatPrompts.Add(new Message(Role.Assistant, prompt.response));
                     }
                 }
                 else
@@ -209,7 +213,7 @@ namespace JeffBot
                     UsersContext[userName] = new LimitedQueue<(string prompt, string response)>(5);
                 }
             }
-            chatPrompts.Add(new ChatPrompt("user", $"{whatToAsk}"));
+            chatPrompts.Add(new Message(Role.User, $"{whatToAsk}"));
             return chatPrompts;
         }
         #endregion
