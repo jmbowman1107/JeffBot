@@ -7,8 +7,8 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AspNet.Security.OAuth.Spotify" Version="6.0.14" />
-    <PackageReference Include="AspNet.Security.OAuth.Twitch" Version="6.0.14" />
+    <PackageReference Include="AspNet.Security.OAuth.Spotify" Version="8.0.0" />
+    <PackageReference Include="AspNet.Security.OAuth.Twitch" Version="8.0.0" />
     <PackageReference Include="Microsoft.IdentityModel.Logging" Version="6.27.0" />
     <PackageReference Include="TwitchLib.Api.Helix" Version="3.9.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

@@ -6,12 +6,12 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.301.22" />
-    <PackageReference Include="AWSSDK.SecretsManager" Version="3.7.302.33" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.302.19" />
+    <PackageReference Include="AWSSDK.SecretsManager" Version="3.7.302.53" />
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="OpenAI-DotNet" Version="7.7.5" />
-    <PackageReference Include="Selenium.Support" Version="4.18.1" />
-    <PackageReference Include="Selenium.WebDriver" Version="4.18.1" />
+    <PackageReference Include="OpenAI-DotNet" Version="7.7.7" />
+    <PackageReference Include="Selenium.Support" Version="4.19.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.19.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="122.0.6261.11100" />
     <PackageReference Include="SpotifyAPI.Web" Version="7.1.1" />
     <PackageReference Include="TwitchLib" Version="3.5.3" />
